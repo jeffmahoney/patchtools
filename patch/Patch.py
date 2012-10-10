@@ -9,7 +9,7 @@ import os
 import email.parser
 import urllib
 from urlparse import urlparse
-from patch import mainline_repos, repos
+from patch.Repos import mainline_repos, repos
 
 
 
@@ -24,7 +24,6 @@ class Patch:
         self.repourl = None
         self.message = None
         self.in_mainline = False
-
         if repo in mainline_repos:
             self.in_mainline = True
 
@@ -150,13 +149,13 @@ class Patch:
             return f
 
     def find_commit(self):
-            for repo in repos:
-                commit = PatchOps.get_commit(self.commit, repo)
-                if commit is not None:
-                    self.repo = repo
-                    self.from_email(commit)
-                    return True
-            return False
+        for repo in repos:
+            commit = PatchOps.get_commit(self.commit, repo)
+            if commit is not None:
+                self.repo = repo
+                self.from_email(commit)
+                return True
+        return False
 
     def parse_commitdiff_header(self):
         url = self.message['X-Git-Url']

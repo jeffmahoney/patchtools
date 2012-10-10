@@ -5,7 +5,7 @@ Support package for doing SUSE Patch operations
 
 from subprocess import Popen, PIPE
 import re
-from patch import mainline_repos
+from patch.Repos import mainline_repos
 
 
 class PatchOps:

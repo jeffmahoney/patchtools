@@ -37,4 +37,5 @@ setup(# distribution meta-data
         name="patchopts",
         packages=["patch"],
         scripts=["scripts/exportpatch", "scripts/fixpatch"],
-        version="1.1")
+        version="2.0",
+	data_files=[('/etc', ['patch.cfg'])])

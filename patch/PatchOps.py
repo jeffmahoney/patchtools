@@ -5,14 +5,11 @@ Support package for doing SUSE Patch operations
 
 from subprocess import Popen, PIPE
 import re
-from patch.Repos import mainline_repos
 
 
 class PatchOps:
     @staticmethod
     def get_tag(commit, repo):
-        if repo is None:
-            repo = mainline_repos[0]
         command = "(cd %s;git name-rev --refs=refs/tags/v* %s)" % (repo, commit)
 
         cmd = Popen(command, shell=True, stdout=PIPE, stderr=open("/dev/null", "w"))
@@ -30,7 +27,7 @@ class PatchOps:
         return None
 
     @staticmethod
-    def get_next_tag(repo=mainline_repos[0]):
+    def get_next_tag(repo):
         command = "(cd %s ; git tag -l)" % repo
         cmd = Popen(command, shell=True, stdout=PIPE, stderr=open("/dev/null", "w"))
         tag = cmd.communicate()[0]

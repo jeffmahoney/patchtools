@@ -1,45 +1,35 @@
 #!/usr/bin/env python
 """
-Support package for doing SUSE Patch operations
+Represent Git Repos
 """
 
 import os
+from ConfigParser import ConfigParser
 
 
-# everyplace to search for the commit it, in order of preference
-repos = [
-    ".",
-    "/alt/linux/linux-2.6",
-    "/alt/linux/scsi",
-    "/alt/public_projects/tgt",
-]
+class Repos:
+    def __init__(self):
+        config = ConfigParser()
+        config.read(['/etc/patch.cfg', os.path.expanduser('~/.patch.cfg'), './patch.cfg'])
+        self.repos = config.get('patch', 'repos').split()
+        self.mainline_repos = config.get('patch', 'mainline_repos').split()
 
-# everything that is the canonical mainline repos, so e.g. it has the
-# local path and the canonical git location
-mainline_repos = [
-    "/alt/linux/linux-2.6",
-    "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git",
-    "/alt/linux/scsi",
-    "git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git",
-]
+    def _canonicalize(self, path):
+        if path[0] == '/':
+            return os.path.realpath(path)
+        elif path == ".":
+            return os.getcwd()
+        else:
+            return path
 
-#
-# canonicalize pathnames
-#
+    def get_repos(self):
+        return list(self._canonicalize(r) for r in self.repos)
 
-for index in range(0, len(mainline_repos)):
-    if mainline_repos[index][0] == '/':
-        mainline_repos[index] = os.path.realpath(mainline_repos[index])
-    elif mainline_repos[index] == ".":
-        mainline_repos[index] = os.getcwd()
+    def get_mainline_repos(self):
+        return list(self._canonicalize(r) for r in self.mainline_repos)
 
-for index in range(0, len(repos)):
-    if repos[index][0] == '/':
-        repos[index] = os.path.realpath(repos[index])
-    elif repos[index] == ".":
-        repos[index] = os.getcwd()
-
-
+    def get_default_mainline_repo(self):
+        return self._canonicalize(self.mainline_repos[0])
 
 
 

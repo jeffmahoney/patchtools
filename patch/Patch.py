@@ -9,7 +9,7 @@ import os
 import email.parser
 import urllib
 from urlparse import urlparse
-from patch.Repos import mainline_repos, repos
+from patch.Repos import Repos
 
 
 
@@ -18,14 +18,20 @@ _patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-
 
 
 class Patch:
-    def __init__(self, commit=None, repo=None):
+    def __init__(self, commit=None, repo=None, debug=False):
         self.commit = commit
         self.repo = repo
+        self.debug = debug
         self.repourl = None
         self.message = None
+        repos = Repos()
+        self.repo_list = repos.get_repos()
+        self.mainline_repo_list = repos.get_mainline_repos()
         self.in_mainline = False
-        if repo in mainline_repos:
+        if repo in self.mainline_repo_list:
             self.in_mainline = True
+        if self.debug:
+            print "DEBUG: repo_list:", self.repo_list
 
     def add_diffstat(self):
         for line in self.message.get_payload().splitlines():
@@ -101,13 +107,13 @@ class Patch:
                     self.commit = m.group(1)
                     self.find_repo()
 
-        if self.repo in mainline_repos:
+        if self.repo in self.mainline_repo_list:
             self.in_mainline = True
         elif self.repo and not self.message['Git-repo']:
             r = self.repourl
             if not r:
                     r = PatchOps.get_git_repo_url(self.repo)
-            if r and r not in mainline_repos:
+            if r and r not in self.mainline_repo_list:
                 self.message.add_header('Git-repo', r)
                 self.repourl = r
 
@@ -149,7 +155,7 @@ class Patch:
             return f
 
     def find_commit(self):
-        for repo in repos:
+        for repo in self.repo_list:
             commit = PatchOps.get_commit(self.commit, repo)
             if commit is not None:
                 self.repo = repo
@@ -200,13 +206,13 @@ class Patch:
 
         if self.commit:
             commit = None
-            for repo in repos:
+            for repo in self.repo_list:
                 commit = PatchOps.get_commit(self.commit, repo)
                 if commit:
                     r = self.repourl
                     if not r:
                             r = PatchOps.get_git_repo_url(self.repo)
-                    if r and r in mainline_repos:
+                    if r and r in self.mainline_repo_list:
                         self.in_mainline = True
                     else:
                         self.repo = repo
@@ -269,7 +275,15 @@ class Patch:
 
 # for testing this module
 if __name__ == '__main__':
-    p = Patch('50e9efd60b213ce43ad6979bfc18e25eec2d8413')
+    p = Patch('50e9efd60b213ce43ad6979bfc18e25eec2d8413',
+              [".",
+               "/alt/linux/linux-2.6",
+               "/alt/linux/scsi",
+               "/alt/public_projects/tgt"],
+              ["/alt/linux/linux-2.6",
+               "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git",
+               "/alt/linux/scsi",
+               "git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git"])
     p.find_commit()
 
-    print p.files()
+    print "Files:", p.files()

@@ -4,7 +4,7 @@ Export a patch from someplace else back to our SUSE tree. From Jeff Mahoney, upd
 by Lee Duncan.
 """
 
-__revision__ = '$Revision: 1.4 $'
+__revision__ = 'Revision: 2.0'
 __author__ = 'Jeff Mahoney'
 
 import sys
@@ -15,14 +15,15 @@ from urlparse import urlparse
 import os
 
 
-# write out a patch file
+# default: do not write out a patch file
 WRITE=False
 
 # default directory where patch gets written
 DIR="."
 
+
 def export_patch(commit, options):
-    p = Patch(commit)
+    p = Patch(commit, debug=options.debug)
     if p.find_commit():
         p.add_acked_by()
         if options.write:
@@ -46,13 +47,17 @@ def export_patch(commit, options):
         print >>sys.stderr, "Couldn't locate commit \"%s\"; Skipping." % commit
 
 if __name__ == "__main__":
-    parser = OptionParser(version='%prog ' + __revision__)
+    parser = OptionParser(version='%prog ' + __revision__,
+                          usage='%prog [options] <PATCH-HASH> --  export patch so it can be imported elsewhere')
     parser.add_option("-w", "--write", action="store_true",
-		    help="write patch file(s) [default is stdout]", default=WRITE)
+                      help="write patch file(s) instead of stdout [default is %default]",
+                      default=WRITE)
     parser.add_option("-d", "--dir", action="store",
-		    help="write patch to this directory (default '.')", default=DIR)
+                      help="write patch to this directory (default '.')", default=DIR)
     parser.add_option("-f", "--force", action="store_true",
-		    help="write over existing patch", default=False)
+                      help="write over existing patch", default=False)
+    parser.add_option("-D", "--debug", action="store_true",
+                      help="set debug mode", default=False)
     (options, args) = parser.parse_args()
 
     if not args:
@@ -62,3 +67,4 @@ if __name__ == "__main__":
     for commit in args:
         export_patch(commit, options)
 
+    sys.exit(0)

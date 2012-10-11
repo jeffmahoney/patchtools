@@ -3,11 +3,11 @@
 Fix a patch?
 """
 
-__revision__ = '$Revision: 1.3 $'
+__revision__ = 'Revision: 2.0'
 __author__ = 'Jeff Mahoney'
 
 
-from patch import PatchOps, Patch
+from patch.Patch import PatchOps, Patch
 from optparse import OptionParser
 import sys
 import os
@@ -77,10 +77,10 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     if not args:
-	parser.error("Must supply patch hash(es)")
+	parser.error("Must supply patch filename(s)")
 	sys.exit(1)
 
     for file in args:
         process_file(file, options)
 
-# vim:sw=4 ts=4 et
+    sys.exit(0)

@@ -12,8 +12,8 @@ class Repos:
     def __init__(self):
         config = ConfigParser()
         config.read(['/etc/patch.cfg', os.path.expanduser('~/.patch.cfg'), './patch.cfg'])
-        self.repos = config.get('patch', 'repos').split()
-        self.mainline_repos = config.get('patch', 'mainline_repos').split()
+        self.repos = config.get('repositories', 'search').split()
+        self.mainline_repos = config.get('repositories', 'mainline').split()
 
     def _canonicalize(self, path):
         if path[0] == '/':

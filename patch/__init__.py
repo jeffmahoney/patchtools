@@ -4,12 +4,13 @@
 """patch class"""
 
 import os
+from Config import Config
 
 __version__ = '1.2'
 
 __all__ = [
 	"Patch",
 	"PatchOps",
-        "Repos",
 ]
 
+config = Config()

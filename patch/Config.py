@@ -9,7 +9,7 @@ from ConfigParser import ConfigParser, NoOptionError
 
 MAINLINE_URL = """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git"""
 
-class Repos:
+class Config:
     def __init__(self):
         config = ConfigParser()
         config.read(['/etc/patch.cfg', os.path.expanduser('~/.patch.cfg'),

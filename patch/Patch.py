@@ -5,7 +5,7 @@ Support package for doing SUSE Patch operations
 """
 
 from patch.PatchOps import PatchOps
-from patch import config
+from patch import config, PatchException
 import re
 import os
 import email.parser
@@ -15,10 +15,13 @@ import string
 
 _patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
 
-class PatchException(Exception):
+class InvalidCommitIDException(PatchException):
     pass
 
-class InvalidCommitIDException(PatchException):
+class InvalidPatchException(PatchException):
+    pass
+
+class InvalidURLException(PatchException):
     pass
 
 class Patch:
@@ -197,7 +200,7 @@ class Patch:
 
         uc = urlparse(url)
         if not uc.scheme:
-            raise Exception("X-Git-Url provided but is not a URL (%s)" % url)
+            raise InvalidURLException("X-Git-Url provided but is not a URL (%s)" % url)
 
         args = dict(map(lambda x : x.split('=', 1), uc.query.split(';')))
         if 'p' in args:
@@ -222,7 +225,7 @@ class Patch:
                 fn = dir + os.sep + fn
             return fn
         else:
-            raise Exception("No subject line")
+            raise InvalidPatchException("Patch contains no Subject line")
 
     def find_repo(self):
         if self.message['Git-repo'] or self.in_mainline:

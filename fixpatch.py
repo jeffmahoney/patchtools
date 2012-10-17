@@ -10,68 +10,62 @@ __revision__ = 'Revision: 2.0'
 __author__ = 'Jeff Mahoney'
 
 
+from patch import PatchException
 from patch.Patch import PatchOps, Patch
 from optparse import OptionParser
 import sys
 import os
 
-
-def get_filename(p, dir=None):
-    if p.message and p.message['Subject']:
-        fn = PatchOps.safe_filename(p.message['Subject'])
-        if dir:
-            fn = dir + os.sep + fn
-        return fn
-    else:
-        raise Exception("No subject line")
-
 def process_file(file, options):
-    p = Patch()
-    f = open(file, "r")
-    p.from_email(f.read())
+    try:
+        p = Patch()
+        f = open(file, "r")
+        p.from_email(f.read())
 
-    if options.name_only:
-        fn = p.get_pathname()
-        print fn
-        return
-
-    if options.update_only:
-        options.header_only = True
-        options.no_rename = True
-
-    if options.header_only:
-        options.no_ack = True
-        options.no_diffstat = True
-        if options.reference:
-            print >>sys.stderr, \
-                  "References won't be updated in header-only mode."
-            options.reference = None
-
-    if not options.no_diffstat:
-        p.add_diffstat()
-    if not options.no_ack:
-        p.add_acked_by()
-
-    if options.reference:
-        p.add_references(options.reference)
-
-    if options.dry_run:
-        print p.message.as_string(unixfrom=False)
-        return
-
-    if options.no_rename:
-        fn = file
-    else:
-        fn = p.get_pathname()
-        if fn != file and os.path.exists(fn) and not options.force:
-            print >> sys.stderr, "%s already exists." % fn
+        if options.name_only:
+            fn = p.get_pathname()
+            print fn
             return
-    print fn
-    f = open(fn, "w")
-    print >> f, p.message.as_string(unixfrom=False)
-    f.close()
-    if fn != file:
-        os.unlink(file)
+
+        if options.update_only:
+            options.header_only = True
+            options.no_rename = True
+
+        if options.header_only:
+            options.no_ack = True
+            options.no_diffstat = True
+            if options.reference:
+                print >>sys.stderr, \
+                      "References won't be updated in header-only mode."
+                options.reference = None
+
+        if not options.no_diffstat:
+            p.add_diffstat()
+        if not options.no_ack:
+            p.add_acked_by()
+
+        if options.reference:
+            p.add_references(options.reference)
+
+        if options.dry_run:
+            print p.message.as_string(unixfrom=False)
+            return
+
+        if options.no_rename:
+            fn = file
+        else:
+            fn = p.get_pathname()
+            if fn != file and os.path.exists(fn) and not options.force:
+                print >> sys.stderr, "%s already exists." % fn
+                return
+        print fn
+        f = open(fn, "w")
+        print >> f, p.message.as_string(unixfrom=False)
+        f.close()
+        if fn != file:
+            os.unlink(file)
+    except PatchException, e:
+        print >>sys.stderr, e
 
 if __name__ == "__main__":
     parser = OptionParser(version='%prog ' + __revision__)

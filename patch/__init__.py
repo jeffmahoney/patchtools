@@ -13,4 +13,7 @@ __all__ = [
 	"PatchOps",
 ]
 
+class PatchException(Exception):
+    pass
+
 config = Config()

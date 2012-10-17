@@ -25,31 +25,31 @@ DIR="."
 def export_patch(commit, options):
     try:
         p = Patch(commit, debug=options.debug, force=options.force)
+        if p.find_commit():
+            if options.reference:
+                p.add_references(options.reference)
+            p.add_acked_by()
+            if options.write:
+                fn = p.get_pathname(options.dir)
+                if os.path.exists(fn) and not options.force:
+                    f = fn
+                    fn += "-%s" % commit[0:8]
+                    print >>sys.stderr, "%s already exists. Using %s" % (f, fn)
+                print fn
+                try:
+                    f = open(fn, "w")
+                except Exception, e:
+                    print >>sys.stderr, "Failed to write %s: %s" % (fn, e)
+                    raise e
+
+                print >>f, p.message
+                f.close()
+            else:
+                print p.message
     except PatchException, e:
         print >>sys.stderr, e
         return None
 
-    if p.find_commit():
-        if options.reference:
-            p.add_references(options.reference)
-        p.add_acked_by()
-        if options.write:
-            fn = p.get_pathname(options.dir)
-            if os.path.exists(fn) and not options.force:
-                f = fn
-                fn += "-%s" % commit[0:8]
-                print >>sys.stderr, "%s already exists. Using %s" % (f, fn)
-            print fn
-            try:
-                f = open(fn, "w")
-            except Exception, e:
-                print >>sys.stderr, "Failed to write %s: %s" % (fn, e)
-                raise e
-
-            print >>f, p.message
-            f.close()
-        else:
-            print p.message
     else:
         print >>sys.stderr, "Couldn't locate commit \"%s\"; Skipping." % commit
 

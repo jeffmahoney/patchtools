@@ -80,11 +80,17 @@ class Patch:
                     return
 
         text = ""
+        last = ""
         for line in self.message.get_payload().splitlines():
             if re.match("^---$", line):
                 text = text.rstrip() + "\n"
+
+                # If this is the first *-by tag, separate it
+                if not re.search("-by: ", last):
+                    text += "\n"
                 text += "Acked-by: %s <%s>\n" % (config.name, config.email)
             text += line + "\n"
+            last = line
 
         self.message.set_payload(text)
 

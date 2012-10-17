@@ -22,10 +22,11 @@ class InvalidCommitIDException(PatchException):
     pass
 
 class Patch:
-    def __init__(self, commit=None, repo=None, debug=False):
+    def __init__(self, commit=None, repo=None, debug=False, force=False):
         self.commit = commit
         self.repo = repo
         self.debug = debug
+        self.force = force
         self.repourl = None
         self.message = None
         self.repo_list = config.get_repos()
@@ -183,7 +184,7 @@ class Patch:
 
     def find_commit(self):
         for repo in self.repo_list:
-            commit = PatchOps.get_commit(self.commit, repo)
+            commit = PatchOps.get_commit(self.commit, repo, self.force)
             if commit is not None:
                 self.repo = repo
                 self.from_email(commit)
@@ -234,7 +235,7 @@ class Patch:
         if self.commit:
             commit = None
             for repo in self.repo_list:
-                commit = PatchOps.get_commit(self.commit, repo)
+                commit = PatchOps.get_commit(self.commit, repo, self.force)
                 if commit:
                     r = self.repourl
                     if not r:

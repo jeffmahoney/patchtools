@@ -7,6 +7,8 @@ Support package for doing SUSE Patch operations
 from subprocess import Popen, PIPE
 import re
 
+class LocalCommitException(Exception):
+    pass
 
 class PatchOps:
     @staticmethod
@@ -74,16 +76,32 @@ class PatchOps:
         return None
 
     @staticmethod
-    def get_commit(commit, repo):
+    def confirm_commit(commit, repo):
+        cmd = Popen("cd %s ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)" % repo, shell=True, stdout=PIPE, stderr=open("/dev/null", "w"))
+        out = cmd.communicate()[0]
+        if out == "":
+            return True
+
+        commits = out.split()
+        if commit in commits:
+            return False
+        return True
+
+    @staticmethod
+    def get_commit(commit, repo, force=False):
         cmd = Popen("cd %s ; git diff-tree --pretty=email -r -p --cc --stat %s" % \
                     (repo, commit),
                     shell=True,
                     stdout=PIPE,
                     stderr=open("/dev/null", "w"))
-        out = cmd.communicate()[0]
-        if out == "":
+        data = cmd.communicate()[0]
+        if data == "":
             return None
-        return out
+
+        if not force and not PatchOps.confirm_commit(commit, repo):
+            raise LocalCommitException("Commit is not in the remote repository. Use -f to override.")
+
+        return data
 
     @staticmethod
     def safe_filename(name):

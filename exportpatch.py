@@ -22,10 +22,9 @@ WRITE=False
 # default directory where patch gets written
 DIR="."
 
-
 def export_patch(commit, options):
     try:
-        p = Patch(commit, debug=options.debug)
+        p = Patch(commit, debug=options.debug, force=options.force)
     except PatchException, e:
         print >>sys.stderr, e
         return None
@@ -44,7 +43,7 @@ def export_patch(commit, options):
             try:
                 f = open(fn, "w")
             except Exception, e:
-		print >>sys.stderr, "Failed to write %s: %s" % (fn, e)
+                print >>sys.stderr, "Failed to write %s: %s" % (fn, e)
                 raise e
 
             print >>f, p.message
@@ -63,7 +62,7 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dir", action="store",
                       help="write patch to this directory (default '.')", default=DIR)
     parser.add_option("-f", "--force", action="store_true",
-                      help="write over existing patch", default=False)
+                      help="write over existing patch or export commit that only exists in local repo", default=False)
     parser.add_option("-D", "--debug", action="store_true",
                       help="set debug mode", default=False)
     parser.add_option("-F", "--reference", action="append",

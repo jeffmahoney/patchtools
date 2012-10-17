@@ -11,6 +11,7 @@ import os
 import email.parser
 import urllib
 from urlparse import urlparse
+import string
 
 _patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
 
@@ -80,6 +81,20 @@ class Patch:
     def update_diffstat(self):
         self.strip_diffstat()
         self.add_diffstat()
+
+    def add_references(self, newrefs):
+        if 'References' in self.message:
+            refs = self.message['References'].split()
+            for ref in refs:
+                if ref in newrefs:
+                    newrefs.remove(ref)
+
+            refs += newrefs
+            refs.sort()
+            self.message.replace_header('References', string.join(refs, ' '))
+        else:
+            newrefs.sort()
+            self.message.add_header('References', string.join(newrefs, ' '))
 
     def add_acked_by(self):
         for line in self.message.get_payload().splitlines():

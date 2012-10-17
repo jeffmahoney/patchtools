@@ -31,6 +31,8 @@ def export_patch(commit, options):
         return None
 
     if p.find_commit():
+        if options.reference:
+            p.add_references(options.reference)
         p.add_acked_by()
         if options.write:
             fn = p.get_pathname(options.dir)
@@ -64,11 +66,13 @@ if __name__ == "__main__":
                       help="write over existing patch", default=False)
     parser.add_option("-D", "--debug", action="store_true",
                       help="set debug mode", default=False)
+    parser.add_option("-F", "--reference", action="append",
+                      help="add reference tag", default=None)
     (options, args) = parser.parse_args()
 
     if not args:
-	parser.error("Must supply patch hash(es)")
-	sys.exit(1)
+        parser.error("Must supply patch hash(es)")
+        sys.exit(1)
 
     for commit in args:
         export_patch(commit, options)

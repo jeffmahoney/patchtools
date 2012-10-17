@@ -48,6 +48,9 @@ def process_file(file, options):
     if not options.no_ack:
         p.add_acked_by()
 
+    if options.reference:
+        p.add_references(options.reference)
+
     if options.dry_run:
         print p.message.as_string(unixfrom=False)
         return
@@ -76,12 +79,14 @@ if __name__ == "__main__":
     parser.add_option("-H", "--header-only", action="store_true", default=False)
     parser.add_option("-U", "--update-only", action="store_true", default=False)
     parser.add_option("-R", "--name-only", action="store_true", default=False)
+    parser.add_option("-F", "--reference", action="append", default=None,
+                      help="add reference tag")
 
     (options, args) = parser.parse_args()
 
     if not args:
-	parser.error("Must supply patch filename(s)")
-	sys.exit(1)
+        parser.error("Must supply patch filename(s)")
+        sys.exit(1)
 
     for file in args:
         process_file(file, options)

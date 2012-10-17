@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Export a patch from someplace else back to our SUSE tree. From Jeff Mahoney, updated
-by Lee Duncan.
+Export a patch from a repository with the SUSE set of patch headers.
+From Jeff Mahoney, updated by Lee Duncan.
 """
 
 __revision__ = 'Revision: 2.0'

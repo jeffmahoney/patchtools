@@ -1,6 +1,8 @@
 #!/usr/bin/python
 """
-Fix a patch?
+Take an existing patch and add the appropriate tags, drawing from known
+repositories to discover the origin. Also, renames the patch using the
+subject found in the patch itself.
 """
 
 __revision__ = 'Revision: 2.0'

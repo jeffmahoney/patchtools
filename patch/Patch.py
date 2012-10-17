@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: sw=4 ts=4 et si:
 """
 Support package for doing SUSE Patch operations
 """

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim: sw=4 ts=4 et si:
 """
 Take an existing patch and add the appropriate tags, drawing from known
 repositories to discover the origin. Also, renames the patch using the

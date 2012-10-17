@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: sw=4 ts=4 et si:
 """
 Export a patch from a repository with the SUSE set of patch headers.
 From Jeff Mahoney, updated by Lee Duncan.

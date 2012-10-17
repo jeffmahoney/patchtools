@@ -14,6 +14,12 @@ from urlparse import urlparse
 
 _patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
 
+class PatchException(Exception):
+    pass
+
+class InvalidCommitIDException(PatchException):
+    pass
+
 class Patch:
     def __init__(self, commit=None, repo=None, debug=False):
         self.commit = commit
@@ -28,6 +34,9 @@ class Patch:
             self.in_mainline = True
         if self.debug:
             print "DEBUG: repo_list:", self.repo_list
+
+        if commit and (re.search("\^", commit) or re.search("HEAD", commit)):
+            raise InvalidCommitIDException("Commit IDs must be hashes, not relative references. HEAD and ^ are not allowed.")
 
     def add_diffstat(self):
         for line in self.message.get_payload().splitlines():

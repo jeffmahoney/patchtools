@@ -10,7 +10,7 @@ __author__ = 'Jeff Mahoney'
 
 import sys
 import re
-from patch.Patch import Patch
+from patch.Patch import Patch, PatchException
 from optparse import OptionParser
 from urlparse import urlparse
 import os
@@ -24,7 +24,12 @@ DIR="."
 
 
 def export_patch(commit, options):
-    p = Patch(commit, debug=options.debug)
+    try:
+        p = Patch(commit, debug=options.debug)
+    except PatchException, e:
+        print >>sys.stderr, e
+        return None
+
     if p.find_commit():
         p.add_acked_by()
         if options.write:

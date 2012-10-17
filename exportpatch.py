@@ -54,7 +54,7 @@ def export_patch(commit, options):
 
 if __name__ == "__main__":
     parser = OptionParser(version='%prog ' + __revision__,
-                          usage='%prog [options] <PATCH-HASH> --  export patch so it can be imported elsewhere')
+                          usage='%prog [options] <PATCH-HASH> --  export patch with proper patch headers')
     parser.add_option("-w", "--write", action="store_true",
                       help="write patch file(s) instead of stdout [default is %default]",
                       default=WRITE)

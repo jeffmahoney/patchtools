@@ -9,6 +9,7 @@ from ConfigParser import ConfigParser, NoOptionError
 
 MAINLINE_URL = """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git"""
 
+# We deliberately don't catch exceptions when the option is mandatory
 class Config:
     def __init__(self):
         config = ConfigParser()
@@ -21,6 +22,10 @@ class Config:
             self.mainline_repos += repos
         except NoOptionError, e:
             pass
+
+        self.name = config.get('contact', 'name')
+        self.emails = config.get('contact', 'email').split()
+        self.email = self.emails[0]
 
     def _canonicalize(self, path):
         if path[0] == '/':

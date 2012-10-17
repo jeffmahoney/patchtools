@@ -5,18 +5,14 @@ Support package for doing SUSE Patch operations
 """
 
 from patch.PatchOps import PatchOps
+from patch import config
 import re
 import os
 import email.parser
 import urllib
 from urlparse import urlparse
-from patch.Repos import Repos
-
-
 
 _patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
-
-
 
 class Patch:
     def __init__(self, commit=None, repo=None, debug=False):
@@ -25,9 +21,8 @@ class Patch:
         self.debug = debug
         self.repourl = None
         self.message = None
-        repos = Repos()
-        self.repo_list = repos.get_repos()
-        self.mainline_repo_list = repos.get_mainline_repos()
+        self.repo_list = config.get_repos()
+        self.mainline_repo_list = config.get_mainline_repos()
         self.in_mainline = False
         if repo in self.mainline_repo_list:
             self.in_mainline = True
@@ -79,15 +74,16 @@ class Patch:
 
     def add_acked_by(self):
         for line in self.message.get_payload().splitlines():
-            if re.search("Acked-by.*lduncan@suse", line) or \
-               re.search("Signed-off-by.*lduncan@suse", line):
-                return
+            for email in config.emails:
+                if re.search("Acked-by.*%s" % email, line) or \
+                   re.search("Signed-off-by.*%s" % email, line):
+                    return
 
         text = ""
         for line in self.message.get_payload().splitlines():
             if re.match("^---$", line):
                 text = text.rstrip() + "\n"
-                text += "Acked-by: Lee Duncan <lduncan@suse.com>\n"
+                text += "Acked-by: %s <%s>\n" % (config.name, config.email)
             text += line + "\n"
 
         self.message.set_payload(text)

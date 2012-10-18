@@ -251,6 +251,18 @@ class Patch:
 
         return False
 
+    def extract(self, paths):
+        text = ""
+        chunk = ""
+        for line in self.message.get_payload().splitlines():
+            if _patch_start_re.match(line):
+                text += chunk
+                chunk = ""
+            chunk += line + "\n"
+
+        text += chunk
+        return text
+
     def header(self):
         in_body = False
         ret = ""
@@ -276,25 +288,41 @@ class Patch:
                 ret += line + "\n"
         return ret
 
+    @staticmethod
+    def file_in_path(file, paths):
+        for f in paths:
+            if f[len(f)-1] == '/' and re.match(f, file):
+                return True
+        return False
+
     def filter(self, files):
         body = ""
         chunk = ""
-        file = ""
+        file = None
+        partial = False
         for line in self.body().splitlines():
             if _patch_start_re.match(line):
-                if file in files:
+                if file and Patch.file_in_path(file, files):
                     body += chunk + "\n"
-                file = ""
+                elif file:
+                    partial = True
+                file = None
                 chunk = ""
             chunk += line + "\n"
+
             m = re.match("^\+\+\+ [^/]+/(\S+)", line)
             if m:
                 file = m.group(1)
 
-        if file in files:
+        if file and Patch.file_in_path(file, files):
             body += chunk + "\n"
 
         self.message.set_payload(self.header() + body)
+
+        if partial:
+            commit = self.message['Git-commit']
+            self.message.replace_header('Git-commit', '%s (partial)' % commit)
+            self.message['Patch-filtered'] = string.join(files, ' ')
 
         self.update_diffstat()
 

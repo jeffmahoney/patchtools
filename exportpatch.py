@@ -31,6 +31,8 @@ def export_patch(commit, options):
     if p.find_commit():
         if options.reference:
             p.add_references(options.reference)
+        if options.extract:
+            p.filter(options.extract)
         p.add_acked_by()
         if options.write:
             fn = p.get_pathname(options.dir)
@@ -66,6 +68,8 @@ if __name__ == "__main__":
                       help="set debug mode", default=False)
     parser.add_option("-F", "--reference", action="append",
                       help="add reference tag", default=None)
+    parser.add_option("-x", "--extract", action="append",
+                      help="extract specific parts of the commit; using a path that ends with / includes all files under that hierarchy. This option can be specified multiple times.", default=None)
     (options, args) = parser.parse_args()
 
     if not args:

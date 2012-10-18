@@ -56,7 +56,7 @@ def export_patch(commit, options):
 
 if __name__ == "__main__":
     parser = OptionParser(version='%prog ' + __revision__,
-                          usage='%prog [options] <PATCH-HASH> --  export patch with proper patch headers')
+                          usage='%prog [options] <LIST OF COMMIT HASHES> --  export patch with proper patch headers')
     parser.add_option("-w", "--write", action="store_true",
                       help="write patch file(s) instead of stdout [default is %default]",
                       default=WRITE)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     parser.add_option("-D", "--debug", action="store_true",
                       help="set debug mode", default=False)
     parser.add_option("-F", "--reference", action="append",
-                      help="add reference tag", default=None)
+                      help="add reference tag. This option can be specified multiple times.", default=None)
     parser.add_option("-x", "--extract", action="append",
                       help="extract specific parts of the commit; using a path that ends with / includes all files under that hierarchy. This option can be specified multiple times.", default=None)
     (options, args) = parser.parse_args()

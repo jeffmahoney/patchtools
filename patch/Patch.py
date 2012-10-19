@@ -24,6 +24,9 @@ class InvalidPatchException(PatchException):
 class InvalidURLException(PatchException):
     pass
 
+class EmptyCommitException(PatchException):
+    pass
+
 class Patch:
     def __init__(self, commit=None, repo=None, debug=False, force=False):
         self.commit = commit
@@ -168,6 +171,7 @@ class Patch:
             else:
                 self.message.add_header('Patch-mainline',
                                         "Queued in subsystem maintainer repo")
+        self.handle_merge()
 
     def from_file(self, file):
         f = open(file, "r")
@@ -295,7 +299,111 @@ class Patch:
                 return True
         return False
 
+    @staticmethod
+    def shrink_chunk(chunk):
+        n = -1
+        text = ""
+        start = -1
+        end = -1
+        lines = []
+        added = 0
+        removed = 0
+        count = 0
+        lines = chunk.splitlines()
+        debug = False
+        for line in lines:
+            n += 1
+            if re.match("^-", line):
+                if start < 0:
+                    start = n - 3 # count this line
+                    if start < 0:
+                        if debug:
+                            print "resetting start(1) (%d, %d)" % (start, n)
+                            print "----"
+                            print chunk
+                            print "----"
+                        start = 0
+
+                removed += 1
+                count = 0
+            elif re.match("^\+", line):
+                if start < 0:
+                    start = n - 3 # count this line
+                    if start < 0:
+                        if debug:
+                            print "resetting start(2) (%d, %d)" % (start, n)
+                            print "----"
+                            print chunk
+                            print "----"
+                        start = 0
+
+                added += 1
+                count = 0
+            else:
+                count += 1
+                if start >= 0 and end < 0 and (count > 3 or n +1 == len(lines)):
+                    end = n # count this line
+                    if end >= len(lines):
+                        if debug:
+                            print "Truncating end"
+                            print "----"
+                            print chunk
+                            print "----"
+                        end = len(lines) - 1
+
+            if start >= 0 and end >= 0:
+                diff = end - start
+                text +=  "@@ -%d,%d +%d,%d @@\n" % \
+                    (start + 1, diff - added, start + 1, diff - removed)
+                text += string.join(lines[start:end] , "\n")
+                text += '\n'
+                end = -1
+                start = -1
+                added = 0
+                removed = 0
+
+        return text
+
+    def handle_merge(self):
+        body = ""
+        chunk = ""
+        text = ""
+        
+        in_chunk = False
+        in_patch = False
+        lines = self.body().splitlines()
+        for line in lines:
+            if _patch_start_re.match(line):
+                if in_chunk:
+                    text += Patch.shrink_chunk(chunk)
+                    chunk = ""
+                else:
+                    chunk += line + "\n"
+                in_patch = True
+                in_chunk = False
+            elif re.match("^@@@", line):
+                if in_chunk:
+                    text += Patch.shrink_chunk(chunk)
+                else:
+                    text += chunk
+                chunk = ""
+                in_chunk = True
+            else:
+                if in_chunk:
+                    if line[1] == ' ' or line[1] == '+':
+                        chunk += line[0:1] + line[2:] + "\n"
+                else:
+                    chunk += line + "\n"
+
+        if in_chunk:
+            text += Patch.shrink_chunk(chunk)
+        else:
+            text += chunk
+
+        self.message.set_payload(self.header() + text)
+
     def filter(self, files):
+        is_empty = False
         body = ""
         chunk = ""
         file = None
@@ -319,12 +427,18 @@ class Patch:
 
         self.message.set_payload(self.header() + body)
 
+        if body == "":
+            is_empty = True
+
         if partial:
             commit = self.message['Git-commit']
             self.message.replace_header('Git-commit', '%s (partial)' % commit)
             self.message['Patch-filtered'] = string.join(files, ' ')
 
         self.update_diffstat()
+
+        if is_empty:
+            raise EmptyCommitException("commit is empty")
 
     def update_refs(self, refs):
         if not 'References' in self.message:

@@ -10,7 +10,7 @@ __author__ = 'Jeff Mahoney'
 
 import sys
 import re
-from patch.Patch import Patch, PatchException
+from patch.Patch import Patch, PatchException, EmptyCommitException
 from optparse import OptionParser
 from urlparse import urlparse
 import os
@@ -32,7 +32,11 @@ def export_patch(commit, options):
         if options.reference:
             p.add_references(options.reference)
         if options.extract:
-            p.filter(options.extract)
+            try:
+                p.filter(options.extract)
+            except EmptyCommitException, e:
+                print >>sys.stderr, "Commit %s is now empty. Skipping." % commit
+                return
         p.add_acked_by()
         if options.write:
             fn = p.get_pathname(options.dir)

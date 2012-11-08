@@ -7,17 +7,30 @@ Represent Git Repos
 import os
 import site
 from ConfigParser import ConfigParser, NoOptionError
+from subprocess import Popen, PIPE
+import re
 
 MAINLINE_URL = """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git"""
+
+def get_git_repo_url(dir):
+    command = "(cd %s; git remote show origin -n)" % dir
+    cmd = Popen(command, shell=True, stdout=PIPE,
+                stderr=open("/dev/null", "w"))
+    for line in cmd.communicate()[0].split('\n'):
+        m = re.search("URL:\s+(\S+)", line)
+        if m:
+            return m.group(1)
+
+    return None
 
 # We deliberately don't catch exceptions when the option is mandatory
 class Config:
     def __init__(self):
         config = ConfigParser()
-        config.read([ os.path.expanduser('~/.patch.cfg'),
-                    '%s/etc/patch.cfg' % site.USER_BASE,
-                     './patch.cfg',
-                     '/etc/patch.cfg'])
+        config.read([ '/etc/patch.cfg', 
+                      '%s/etc/patch.cfg' % site.USER_BASE,
+                       os.path.expanduser('~/.patch.cfg'),
+                     './patch.cfg'])
         self.repos = config.get('repositories', 'search').split()
         self.mainline_repos = [ MAINLINE_URL ]
         try:
@@ -25,6 +38,11 @@ class Config:
             self.mainline_repos += repos
         except NoOptionError, e:
             pass
+
+        for repo in self.repos:
+            url = get_git_repo_url(repo)
+            if url in self.mainline_repos:
+                self.mainline_repos += repo
 
         self.name = config.get('contact', 'name')
         self.emails = config.get('contact', 'email').split()

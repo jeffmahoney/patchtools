@@ -39,8 +39,8 @@ setup(# distribution meta-data
         cmdclass={
             'clean': CleanCommand
             },
-        author="Lee Duncan",
-        author_email="lee@gonzoleeman.net",
+        author="Jeff Mahoney",
+        author_email="jeffm@suse.com",
         name="patchopts",
         packages=["patch"],
         scripts=["scripts/exportpatch", "scripts/fixpatch"],

@@ -1,12 +1,11 @@
-jpt
-===
-
-Jeff's Patching Tools
+SUSE Patch Tools
 
 These python script allow easy manipulation of Linux patches, which makes
 back-porting them much easier.
 
-The config file is installed in /etc/patch.cfg if installed as root.
+The config file is installed in /etc/patch.cfg if /etc is writable.
 
-The setup.cfg file tells python to install the tool in your home directory, but
-if you do that as root, they will go in /root/..., so remove the patch.cfg file. :)
+Otherwise, it is installed in ~/.local/etc/patch.cfg.
+
+Tools written by Jeff Mahoney <jeffm@suse.com>
+Setuptools integration by Lee Duncan <lduncan@suse.com>

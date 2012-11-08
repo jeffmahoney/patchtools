@@ -7,6 +7,7 @@ Setup file for installation
 import os
 import sys
 import shutil
+import site
 from distutils.core import setup, Command
 
 
@@ -29,6 +30,11 @@ os.makedirs("scripts")
 shutil.copyfile("exportpatch.py", "scripts/exportpatch")
 shutil.copyfile("fixpatch.py", "scripts/fixpatch")
 
+if os.access("/etc", os.W_OK):
+    path = "/etc"
+else:
+    path = "etc"
+
 setup(# distribution meta-data
         cmdclass={
             'clean': CleanCommand
@@ -39,4 +45,9 @@ setup(# distribution meta-data
         packages=["patch"],
         scripts=["scripts/exportpatch", "scripts/fixpatch"],
         version="2.0",
-	data_files=[('/etc', ['patch.cfg'])])
+	data_files=[(path, ['patch.cfg'])])
+
+if path[0] != '/':
+    path = "%s/%s" % (site.USER_BASE, path)
+
+print "Config file installed at %s/patch.cfg" % (path)

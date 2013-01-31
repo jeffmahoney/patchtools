@@ -22,7 +22,7 @@ WRITE=False
 # default directory where patch gets written
 DIR="."
 
-def export_patch(commit, options):
+def export_patch(commit, options, prefix, suffix):
     try:
         p = Patch(commit, debug=options.debug, force=options.force)
     except PatchException, e:
@@ -37,9 +37,9 @@ def export_patch(commit, options):
             except EmptyCommitException, e:
                 print >>sys.stderr, "Commit %s is now empty. Skipping." % commit
                 return
-        p.add_acked_by()
+        p.add_signature(options.signed_off_by)
         if options.write:
-            fn = p.get_pathname(options.dir)
+            fn = p.get_pathname(options.dir, prefix, suffix)
             if os.path.exists(fn) and not options.force:
                 f = fn
                 fn += "-%s" % commit[0:8]
@@ -64,6 +64,12 @@ if __name__ == "__main__":
     parser.add_option("-w", "--write", action="store_true",
                       help="write patch file(s) instead of stdout [default is %default]",
                       default=WRITE)
+    parser.add_option("-s", "--suffix", action="store_true",
+                      help="when used with -w, append .patch suffix to filenames.",
+                      default=False)
+    parser.add_option("-n", "--numeric", action="store_true",
+                      help="when used with -w, prepend order numbers to filenames.",
+                      default=False)
     parser.add_option("-d", "--dir", action="store",
                       help="write patch to this directory (default '.')", default=DIR)
     parser.add_option("-f", "--force", action="store_true",
@@ -74,13 +80,25 @@ if __name__ == "__main__":
                       help="add reference tag. This option can be specified multiple times.", default=None)
     parser.add_option("-x", "--extract", action="append",
                       help="extract specific parts of the commit; using a path that ends with / includes all files under that hierarchy. This option can be specified multiple times.", default=None)
+    parser.add_option("-S", "--signed-off-by", action="store_true",
+		      default=False,
+		      help="Use Signed-off-by instead of Acked-by")
     (options, args) = parser.parse_args()
 
     if not args:
         parser.error("Must supply patch hash(es)")
         sys.exit(1)
 
+    n = 1
+    suffix = ""
+    if options.suffix:
+	suffix = ".patch"
+
     for commit in args:
-        export_patch(commit, options)
+	prefix = ""
+	if options.numeric:
+		prefix = "%04d-" % n
+        export_patch(commit, options, prefix, suffix)
+	n += 1
 
     sys.exit(0)

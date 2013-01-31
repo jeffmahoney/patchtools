@@ -42,7 +42,7 @@ def process_file(file, options):
         if not options.no_diffstat:
             p.add_diffstat()
         if not options.no_ack:
-            p.add_acked_by()
+            p.add_signature(options.signed_off_by)
 
         if options.reference:
             p.add_references(options.reference)
@@ -87,6 +87,9 @@ if __name__ == "__main__":
                       help="Print the new filename for the patch but don't change anything")
     parser.add_option("-F", "--reference", action="append", default=None,
                       help="add reference tag")
+    parser.add_option("-S", "--signed-off-by", action="store_true",
+		      default=False,
+		      help="Use Signed-off-by instead of Acked-by")
 
     (options, args) = parser.parse_args()
 

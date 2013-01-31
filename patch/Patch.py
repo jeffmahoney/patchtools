@@ -103,7 +103,7 @@ class Patch:
             newrefs.sort()
             self.message.add_header('References', string.join(newrefs, ' '))
 
-    def add_acked_by(self):
+    def add_signature(self, sob=False):
         for line in self.message.get_payload().splitlines():
             for email in config.emails:
                 if re.search("Acked-by.*%s" % email, line) or \
@@ -119,7 +119,11 @@ class Patch:
                 # If this is the first *-by tag, separate it
                 if not re.search("-by: ", last):
                     text += "\n"
-                text += "Acked-by: %s <%s>\n" % (config.name, config.email)
+                if sob:
+                    tag = "Signed-off-by"
+                else:
+                    tag = "Acked-by"
+                text += "%s: %s <%s>\n" % (tag, config.name, config.email)
             text += line + "\n"
             last = line
 
@@ -222,9 +226,10 @@ class Patch:
             self.commit = args['h']
         del self.message['X-Git-Url']
 
-    def get_pathname(self, dir=None):
+    def get_pathname(self, dir=None, prefix="", suffix=""):
         if self.message and self.message['Subject']:
             fn = PatchOps.safe_filename(self.message['Subject'])
+	    fn = "%s%s%s" % (prefix, fn, suffix)
             if dir:
                 fn = dir + os.sep + fn
             return fn

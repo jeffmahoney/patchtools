@@ -8,6 +8,32 @@ from patch import PatchException
 from subprocess import Popen, PIPE
 import re
 
+def key_version(tag):
+    m = re.match("v2\.(\d+)\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
+    if m:
+        major = 2
+        minor = int(m.group(1))
+        patch = int(m.group(2))
+        if m.group(5):
+            return (major, minor, patch, False, m.group(5))
+        else:
+            return (major, minor, patch, True, m.group(4))
+
+    m = re.match("v3\.(\d+)(\.d+|-rc\d+|)", tag)
+    m = re.match("v3\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
+    if m:
+        major = 3
+        minor = int(m.group(1))
+        patch = 0
+        if m.group(4):
+            return (major, minor, patch, False, m.group(4))
+        else:
+            if m.group(3):
+                    patch = int(m.group(3))
+            return (major, minor, patch, True, None)
+
+    return None
+
 class LocalCommitException(PatchException):
     pass
 
@@ -40,6 +66,7 @@ class PatchOps:
             return None
 
         lines = tag.split()
+        lines.sort(key=key_version)
         lasttag = lines[len(lines) - 1]
 
         m = re.search("v([0-9]+)\.([0-9]+)(|-rc([0-9]+))$", lasttag)

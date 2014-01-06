@@ -10,7 +10,7 @@ from ConfigParser import ConfigParser, NoOptionError
 from subprocess import Popen, PIPE
 import re
 
-MAINLINE_URL = """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git"""
+MAINLINE_URLS = [ """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git""", """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git""" ]
 
 def get_git_repo_url(dir):
     command = "(cd %s; git remote show origin -n)" % dir
@@ -32,7 +32,7 @@ class Config:
                        os.path.expanduser('~/.patch.cfg'),
                      './patch.cfg'])
         self.repos = config.get('repositories', 'search').split()
-        self.mainline_repos = [ MAINLINE_URL ]
+        self.mainline_repos = MAINLINE_URLS
         try:
             repos = config.get('repositories', 'mainline').split()
             self.mainline_repos += repos

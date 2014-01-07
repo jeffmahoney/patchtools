@@ -51,10 +51,10 @@ def export_patch(commit, options, prefix, suffix):
                 print >>sys.stderr, "Failed to write %s: %s" % (fn, e)
                 raise e
 
-            print >>f, p.message
+            print >>f, p.message.as_string(False)
             f.close()
         else:
-            print p.message
+            print p.message.as_string(False)
     else:
         print >>sys.stderr, "Couldn't locate commit \"%s\"; Skipping." % commit
 

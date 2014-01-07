@@ -136,14 +136,18 @@ class Patch:
         if 'Git-commit' in self.message:
             self.commit = self.message['Git-commit']
 
+        msg_from = self.message.get_unixfrom()
+        if msg_from is not None:
+            m = re.match("From (\S{40})", msg_from)
+            if m:
+                msg_commit = m.group(1)
+                if not self.commit or \
+                   re.match("^%s.*" % self.commit, msg_commit) is not None:
+                    self.commit = msg_commit
+                self.find_repo()
+
         if not self.repo:
             f = self.find_repo()
-            env_from = self.message.get_unixfrom()
-            if not f and env_from is not None:
-                m = re.match("From (\S{40})", env_from)
-                if m:
-                    self.commit = m.group(1)
-                    self.find_repo()
 
         if self.repo in self.mainline_repo_list:
             self.in_mainline = True

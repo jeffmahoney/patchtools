@@ -303,8 +303,10 @@ class Patch:
 
     @staticmethod
     def file_in_path(file, paths):
+        if file in paths:
+            return True
         for f in paths:
-            if f[len(f)-1] == '/' and re.match(f, file):
+            if f[-1:] == '/' and f in file:
                 return True
         return False
 
@@ -411,27 +413,29 @@ class Patch:
 
         self.message.set_payload(self.header() + text)
 
-    def filter(self, files):
+    def filter(self, files, exclude=False):
         is_empty = False
         body = ""
         chunk = ""
-        file = None
+        filename = None
         partial = False
+
         for line in self.body().splitlines():
             if _patch_start_re.match(line):
-                if file and Patch.file_in_path(file, files):
-                    body += chunk + "\n"
-                elif file:
-                    partial = True
-                file = None
+                if filename:
+                    if exclude ^ Patch.file_in_path(filename, files):
+                        body += chunk + "\n"
+                    else:
+                        partial = True
+                    filename = None
                 chunk = ""
             chunk += line + "\n"
 
             m = re.match("^\+\+\+ [^/]+/(\S+)", line)
             if m:
-                file = m.group(1)
+                filename = m.group(1)
 
-        if file and Patch.file_in_path(file, files):
+        if exclude ^ Patch.file_in_path(filename, files):
             body += chunk + "\n"
 
         self.message.set_payload(self.header() + body)
@@ -441,9 +445,20 @@ class Patch:
 
         if partial:
             commit = self.message['Git-commit']
-            self.message.replace_header('Git-commit', '%s (partial)' % commit)
-            self.message['Patch-filtered'] = string.join(files, ' ')
+            if not '(partial)' in commit:
+                self.message.replace_header('Git-commit',
+                                            '%s (partial)' % commit)
+            if exclude:
+                filtered_header = string.join([''] + files, ' !')[1:]
+            else:
+                filtered_header = string.join(files, ' ')
 
+            if 'Patch-filtered' in self.message:
+                h = self.message['Patch-filtered']
+                self.message.replace_header('Patch-filtered',
+                                            "%s %s" % (h, filtered_header))
+            else:
+                self.message['Patch-filtered'] = filtered_header
         self.update_diffstat()
 
         if is_empty:

@@ -37,6 +37,12 @@ def export_patch(commit, options, prefix, suffix):
             except EmptyCommitException, e:
                 print >>sys.stderr, "Commit %s is now empty. Skipping." % commit
                 return
+        if options.exclude:
+            try:
+                p.filter(options.exclude, True)
+            except EmptyCommitException, e:
+                print >>sys.stderr, "Commit %s is now empty. Skipping." % commit
+                return
         p.add_signature(options.signed_off_by)
         if options.write:
             fn = p.get_pathname(options.dir, prefix, suffix)
@@ -80,6 +86,8 @@ if __name__ == "__main__":
                       help="add reference tag. This option can be specified multiple times.", default=None)
     parser.add_option("-x", "--extract", action="append",
                       help="extract specific parts of the commit; using a path that ends with / includes all files under that hierarchy. This option can be specified multiple times.", default=None)
+    parser.add_option("-X", "--exclude", action="append",
+                      help="exclude specific parts of the commit; using a path that ends with / excludes all files under that hierarchy. This option can be specified multiple times.", default=None)
     parser.add_option("-S", "--signed-off-by", action="store_true",
 		      default=False,
 		      help="Use Signed-off-by instead of Acked-by")

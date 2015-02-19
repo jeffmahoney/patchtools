@@ -302,11 +302,11 @@ class Patch:
         return ret
 
     @staticmethod
-    def file_in_path(file, paths):
-        if file in paths:
+    def file_in_path(filename, paths):
+        if filename in paths:
             return True
         for f in paths:
-            if f[-1:] == '/' and f in file:
+            if f[-1:] == '/' and f in filename:
                 return True
         return False
 
@@ -435,7 +435,7 @@ class Patch:
             if m:
                 filename = m.group(1)
 
-        if exclude ^ Patch.file_in_path(filename, files):
+        if filename and exclude ^ Patch.file_in_path(filename, files):
             body += chunk + "\n"
 
         self.message.set_payload(self.header() + body)

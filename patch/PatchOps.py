@@ -19,17 +19,16 @@ def key_version(tag):
         else:
             return (major, minor, patch, True, m.group(4))
 
-    m = re.match("v3\.(\d+)(\.d+|-rc\d+|)", tag)
-    m = re.match("v3\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
+    m = re.match("v(\d+)\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
     if m:
-        major = 3
-        minor = int(m.group(1))
+        major = int(m.group(1))
+        minor = int(m.group(2))
         patch = 0
-        if m.group(4):
-            return (major, minor, patch, False, m.group(4))
+        if m.group(5):
+            return (major, minor, patch, False, m.group(5))
         else:
-            if m.group(3):
-                    patch = int(m.group(3))
+            if m.group(4):
+                    patch = int(m.group(4))
             return (major, minor, patch, True, None)
 
     return None

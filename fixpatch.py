@@ -47,6 +47,9 @@ def process_file(file, options):
         if options.reference:
             p.add_references(options.reference)
 
+        if options.mainline:
+            p.add_mainline(options.mainline)
+
         if options.dry_run:
             print p.message.as_string(unixfrom=False)
             return
@@ -90,6 +93,8 @@ if __name__ == "__main__":
     parser.add_option("-S", "--signed-off-by", action="store_true",
 		      default=False,
 		      help="Use Signed-off-by instead of Acked-by")
+    parser.add_option("-M", "--mainline", action="append", default=None,
+                      help="Add dummy Patch-mainline tag")
 
     (options, args) = parser.parse_args()
 

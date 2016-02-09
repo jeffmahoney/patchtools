@@ -76,6 +76,9 @@ if __name__ == "__main__":
     parser.add_option("-n", "--numeric", action="store_true",
                       help="when used with -w, prepend order numbers to filenames.",
                       default=False)
+    parser.add_option("-N", "--first-number", action="store",
+                      help="Start numbering the patches with number instead of 1",
+                      default=1)
     parser.add_option("-d", "--dir", action="store",
                       help="write patch to this directory (default '.')", default=DIR)
     parser.add_option("-f", "--force", action="store_true",
@@ -97,7 +100,15 @@ if __name__ == "__main__":
         parser.error("Must supply patch hash(es)")
         sys.exit(1)
 
-    n = 1
+    try:
+        n = int(options.first_number)
+    except ValueError: 
+        print "option -N needs a number" 
+        sys.exit(1)
+
+    if n + len(args) > 9999 or n < 0:
+        print "The starting number + commits needs to be in the range 0 - 9999"
+        sys.exit(1)
     suffix = ""
     if options.suffix:
 	suffix = ".patch"

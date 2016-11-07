@@ -92,8 +92,8 @@ if __name__ == "__main__":
     parser.add_option("-X", "--exclude", action="append",
                       help="exclude specific parts of the commit; using a path that ends with / excludes all files under that hierarchy. This option can be specified multiple times.", default=None)
     parser.add_option("-S", "--signed-off-by", action="store_true",
-		      default=False,
-		      help="Use Signed-off-by instead of Acked-by")
+                      default=False,
+                      help="Use Signed-off-by instead of Acked-by")
     (options, args) = parser.parse_args()
 
     if not args:
@@ -111,13 +111,13 @@ if __name__ == "__main__":
         sys.exit(1)
     suffix = ""
     if options.suffix:
-	suffix = ".patch"
+        suffix = ".patch"
 
     for commit in args:
-	prefix = ""
-	if options.numeric:
-		prefix = "%04d-" % n
+        prefix = ""
+        if options.numeric:
+                prefix = "%04d-" % n
         export_patch(commit, options, prefix, suffix)
-	n += 1
+        n += 1
 
     sys.exit(0)

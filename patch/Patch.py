@@ -236,7 +236,7 @@ class Patch:
     def get_pathname(self, dir=None, prefix="", suffix=""):
         if self.message and self.message['Subject']:
             fn = PatchOps.safe_filename(self.message['Subject'])
-	    fn = "%s%s%s" % (prefix, fn, suffix)
+            fn = "%s%s%s" % (prefix, fn, suffix)
             if dir:
                 fn = dir + os.sep + fn
             return fn

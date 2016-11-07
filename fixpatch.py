@@ -91,8 +91,8 @@ if __name__ == "__main__":
     parser.add_option("-F", "--reference", action="append", default=None,
                       help="add reference tag")
     parser.add_option("-S", "--signed-off-by", action="store_true",
-		      default=False,
-		      help="Use Signed-off-by instead of Acked-by")
+              default=False,
+              help="Use Signed-off-by instead of Acked-by")
     parser.add_option("-M", "--mainline", action="append", default=None,
                       help="Add dummy Patch-mainline tag")
 

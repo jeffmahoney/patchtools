@@ -9,8 +9,8 @@ from Config import Config
 __version__ = '1.2'
 
 __all__ = [
-	"Patch",
-	"PatchOps",
+    "Patch",
+    "PatchOps",
 ]
 
 class PatchException(Exception):

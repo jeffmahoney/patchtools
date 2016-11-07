@@ -23,8 +23,11 @@ def process_file(file, options):
         p.from_email(f.read())
 
         if options.name_only:
+            suffix=""
+            if options.suffix:
+                suffix = ".patch"
             fn = p.get_pathname()
-            print fn
+            print "{}{}".format(fn, suffix)
             return
 
         if options.update_only:
@@ -54,10 +57,15 @@ def process_file(file, options):
             print p.message.as_string(unixfrom=False)
             return
 
+        suffix=""
+        if options.suffix:
+            suffix = ".patch"
+
         if options.no_rename:
             fn = file
         else:
-            fn = p.get_pathname()
+            fn = "{}/{}{}".format(os.path.dirname(file), p.get_pathname(),
+                                  suffix)
             if fn != file and os.path.exists(fn) and not options.force:
                 print >> sys.stderr, "%s already exists." % fn
                 return
@@ -95,6 +103,9 @@ if __name__ == "__main__":
               help="Use Signed-off-by instead of Acked-by")
     parser.add_option("-M", "--mainline", action="append", default=None,
                       help="Add dummy Patch-mainline tag")
+    parser.add_option("-s", "--suffix", action="store_true",
+                      help="when used with -w, append .patch suffix to filenames.",
+                      default=False)
 
     (options, args) = parser.parse_args()
 

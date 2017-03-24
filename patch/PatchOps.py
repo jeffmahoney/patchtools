@@ -116,7 +116,7 @@ class PatchOps:
 
     @staticmethod
     def get_commit(commit, repo, force=False):
-        cmd = Popen("cd %s ; git diff-tree --pretty=email -r -p --cc --stat %s" % \
+        cmd = Popen("cd %s ; git diff-tree --no-renames --pretty=email -r -p --cc --stat %s" % \
                     (repo, commit),
                     shell=True,
                     stdout=PIPE,

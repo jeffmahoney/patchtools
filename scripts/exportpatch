@@ -10,7 +10,8 @@ __author__ = 'Jeff Mahoney'
 
 import sys
 import re
-from patch.Patch import Patch, PatchException, EmptyCommitException
+from patchtools import PatchException
+from patchtools.patch import Patch, EmptyCommitException
 from optparse import OptionParser
 from urlparse import urlparse
 import os

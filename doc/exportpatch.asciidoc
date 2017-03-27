@@ -20,7 +20,10 @@ as well as the local repository, though this can be overridden using the '-f'
 option.
 
 The behavior of exportpatch is controlled by the options below and the
-*patch.cfg(5)* configuration file.
+*patchtools.cfg(5)* configuration files.  If no configuration files are
+available, *exportpatch* defaults to using the current directory as a
+git repository, the email address configured for use with git, and the
+user's real name from the system password database.
 
 TAGS
 ----

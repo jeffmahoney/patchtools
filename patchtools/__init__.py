@@ -4,16 +4,11 @@
 """patch class"""
 
 import os
-from Config import Config
+import config
 
 __version__ = '1.2'
-
-__all__ = [
-    "Patch",
-    "PatchOps",
-]
 
 class PatchException(Exception):
     pass
 
-config = Config()
+config = config.Config()

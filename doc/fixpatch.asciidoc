@@ -14,8 +14,12 @@ DESCRIPTION
 The *fixpatch* utility is a tool for fixing common issues with patches that
 have already been exported from a git repository using `exportpatch(1)`, `git-send-email(1)` or `gitweb(1)` raw commit text functionality.
 
-The behavior of fixpatch is controlled by the options below and the
-*patch.cfg(5)* configuration file.
+
+The behavior of *fixpatch* is controlled by the options below and the
+*patchtools.cfg(5)* configuration files.  If no configuration files are
+available, *fixpatch* defaults to using the current directory as a
+git repository, the email address configured for use with git, and the
+user's real name from the system password database.
 
 Unless otherwise specified, default options are to:
 

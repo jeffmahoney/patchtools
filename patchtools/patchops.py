@@ -4,7 +4,7 @@
 Support package for doing SUSE Patch operations
 """
 
-from patch import PatchException
+from patchtools import PatchException
 from subprocess import Popen, PIPE
 import re
 

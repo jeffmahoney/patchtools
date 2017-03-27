@@ -10,8 +10,8 @@ __revision__ = 'Revision: 2.0'
 __author__ = 'Jeff Mahoney'
 
 
-from patch import PatchException
-from patch.Patch import PatchOps, Patch
+from patchtools import PatchException
+from patchtools.patch import PatchOps, Patch
 from optparse import OptionParser
 import sys
 import os

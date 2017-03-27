@@ -4,8 +4,8 @@
 Support package for doing SUSE Patch operations
 """
 
-from patch.PatchOps import PatchOps
-from patch import config, PatchException
+from patchtools.patchops import PatchOps
+from patchtools import config, PatchException
 import re
 import os
 import email.parser
@@ -472,18 +472,3 @@ class Patch:
             self.message.add_header('References', refs)
         else:
             self.message['References'] = refs
-
-# for testing this module
-if __name__ == '__main__':
-    p = Patch('50e9efd60b213ce43ad6979bfc18e25eec2d8413',
-              [".",
-               "/alt/linux/linux-2.6",
-               "/alt/linux/scsi",
-               "/alt/public_projects/tgt"],
-              ["/alt/linux/linux-2.6",
-               "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git",
-               "/alt/linux/scsi",
-               "git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git"])
-    p.find_commit()
-
-    print "Files:", p.files()

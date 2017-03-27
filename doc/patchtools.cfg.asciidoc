@@ -5,10 +5,14 @@ NAME
 ----
 patchtools.cfg - configuration files for patchtools
 
+SYNOPSIS
+--------
+`exportpatch(1)` and `fixpatch(1)` read their configuration information from
+several files.
+
 DESCRIPTION
 -----------
-`exportpatch(1)` and `fixpatch(1)` read their configuration information from
-several files.  The search order is as follows:
+The search order is as follows:
 
 * /etc/patch.cfg
 * /etc/patch.cfg relative to the Python installation site USER_BASE

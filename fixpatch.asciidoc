@@ -1,0 +1,96 @@
+fixpatch(1)
+===========
+
+NAME
+----
+fixpatch - a tool to fix already exported patches
+
+SYNOPSIS
+--------
+*fixpatch* [options] <patch>
+
+DESCRIPTION
+-----------
+The *fixpatch* utility is a tool for fixing common issues with patches that
+have already been exported from a git repository using `exportpatch(1)`, `git-send-email(1)` or `gitweb(1)` raw commit text functionality.
+
+The behavior of fixpatch is controlled by the options below and the
+*patch.cfg(5)* configuration file.
+
+Unless otherwise specified, default options are to:
+
+* add any missing 'Acked-by' tag
+* add a diffstat of the patch between the commit text and the patch content
+* rename the patch to a lower-case "safe" version of the patch subject
+* detect and use a commit id detected in the patch content to generate a proper 'Git-commit' tag
+** 'X-Git-Url' header added by `gitweb(1)`
+** Unix-style mbox 'From' (no colon)
+* use the 'Git-commit' tag to resolve 'Patch-mainline' and 'Git-repo' tags, if any
+
+TAGS
+----
+
+Please see the *TAGS* section in the manual page for `exportpatch(1)` for
+descriptions of individual tag contents.
+
+OPTIONS
+-------
+
+*--version*::
+show program's version number and exit
+
+*-h | --help*::
+show help message and exit
+
+*-n | --dry-run*::
+Output the results to stdout instead of overwriting the file.
+
+*-N | --no-ack*::
+Don't add the Acked-by tag.
+
+*-D | --no-diffstat*::
+Don't add the diffstat to the patch.
+
+*-r | --no-rename*::
+Don't rename the patch file.
+
+*-f | --force*::
+Overwrite any existing file with the same name.
+
+*-H | --header-only*::
+Only resolve headers ('Patch-mainline', 'Git-repo', etc), don't do Acked-by or diffstat.
+
+*-U | --update-only*::
+Update the headers as with '--header-only' but don't rename the file.  This is shorthand for '--no-rename --header-only'.
+
+*-R | --name-only*::
+Output the file name that would be used for output and exit.
+
+*-F | --reference*::
+Add the specified 'References' tag.
+
+*-S | --signed-off-by*::
+Add a 'Signed-off-by' tag instead of 'Acked-by'.
+
+*-M MAINLINE | --mainline=MAINLINE*::
+Add a dummy 'Patch-mainline' tag with the contents specified in 'MAINLINE'.  No validity checking will be performed.
+
+*-s | --suffix*::
+Append '.patch' to the output filename.
+
+EXIT STATUS
+-----------
+*fixpatch* returns a zero exit status if it succeeds.  Non zero is returned
+in case of failure.
+
+AVAILABILITY
+------------
+*fixpatch* is part of Patchtools.
+Please refer to the GitHub repository at https://github.com/jeffmahoney/jpt for more information.
+
+SEE ALSO
+--------
+`exportpatch`(1)
+`patch.cfg(5)`
+`git`(1)
+`git-send-email(1)`

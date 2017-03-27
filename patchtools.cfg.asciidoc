@@ -1,0 +1,64 @@
+patchtools.cfg(5)
+=================
+
+NAME
+----
+patchtools.cfg - configuration files for patchtools
+
+DESCRIPTION
+-----------
+`exportpatch(1)` and `fixpatch(1)` read their configuration information from
+several files.  The search order is as follows:
+
+* /etc/patch.cfg
+* /etc/patch.cfg relative to the Python installation site USER_BASE
+* ~/.patch.cfg
+* ./patch.cfg
+
+These configuration files specify which repositories to search, which are
+considered clones of the upstream "mainline" repository, the user's name, and
+the user's email address.
+
+FORMAT
+------
+
+Python's ConfigParser uses the 'INI' format.
+
+There are two sections:
+
+* [repositories]
+** search:
+ ::
+A list of paths on the local file system to search for repositories containing a given commit.  The list is specified one entry per line, with leading whitespace to indicate it is a member of the search option.
+** mainline:
+ ::
+A list of paths or URLs that indicate whether a particular repository is considered a clone of the upstream "mainline" repository.  The default canonical reopsitory at git.kernel.org is configured automatically.  This option is really only intended for use if you have a site-wide clone and you clone that locally for your own work rather than pulling directly from kernel.org.
+* [contact]
+** name: Your Name
+ ::
+Your name as you'd like it in any added 'Acked-by' or 'Signed-off-by' tag.
+** email: space-separated list of email addresses
+ ::
+A space separated list of email addresses used to commit or send patches upstream.  The list is used to identify whether a relevant 'Acked-by' or 'Signed-off-by' tag is already included in the patch tags.  If no such tag is identified, a new one will be added using the first address in the list.
+
+EXAMPLE
+-------
+
+ [repositories]
+ search:
+   .
+   /src/git/linux/kernel/linux-upstream
+ 
+ [contact]
+ name: Your Name
+ email: yourname@workdomain.com yourname@personaldomain.com oldemail@somesite.com
+
+AVAILABILITY
+------------
+*patchtools.cfg* is part of Patchtools.
+Please refer to the GitHub repository at https://github.com/jeffmahoney/jpt for more information.
+
+SEE ALSO
+--------
+`exportpatch`(1)
+`fixpatch`(1)

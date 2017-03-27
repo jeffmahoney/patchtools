@@ -42,6 +42,7 @@ all: man
 man-install: man
 	$(INSTALL) -d -m 755 $(DESTDIR)$(man1dir)
 	$(INSTALL) -m 644 $(GZ_MAN1) $(DESTDIR)$(man1dir)
+	$(INSTALL) -m 644 $(GZ_MAN5) $(DESTDIR)$(man1dir)
 
 install: man-install
 	python setup.py install

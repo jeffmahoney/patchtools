@@ -183,8 +183,8 @@ class Patch:
                                         "Queued in subsystem maintainer repo")
         self.handle_merge()
 
-    def from_file(self, file):
-        f = open(file, "r")
+    def from_file(self, pathname):
+        f = open(pathname, "r")
         self.from_email(f.read())
         f.close()
 

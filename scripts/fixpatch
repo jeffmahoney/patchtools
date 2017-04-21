@@ -16,10 +16,10 @@ from optparse import OptionParser
 import sys
 import os
 
-def process_file(file, options):
+def process_file(pathname, options):
     try:
         p = Patch()
-        f = open(file, "r")
+        f = open(pathname, "r")
         p.from_email(f.read())
 
         if options.name_only:
@@ -62,19 +62,19 @@ def process_file(file, options):
             suffix = ".patch"
 
         if options.no_rename:
-            fn = file
+            fn = pathname
         else:
-            fn = "{}/{}{}".format(os.path.dirname(file), p.get_pathname(),
+            fn = "{}/{}{}".format(os.path.dirname(pathname), p.get_pathname(),
                                   suffix)
-            if fn != file and os.path.exists(fn) and not options.force:
+            if fn != pathname and os.path.exists(fn) and not options.force:
                 print >> sys.stderr, "%s already exists." % fn
                 return
         print fn
         f = open(fn, "w")
         print >> f, p.message.as_string(unixfrom=False)
         f.close()
-        if fn != file:
-            os.unlink(file)
+        if fn != pathname:
+            os.unlink(pathname)
     except PatchException, e:
         print >>sys.stderr, e
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         parser.error("Must supply patch filename(s)")
         sys.exit(1)
 
-    for file in args:
-        process_file(file, options)
+    for pathname in args:
+        process_file(pathname, options)
 
     sys.exit(0)

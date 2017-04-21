@@ -64,8 +64,10 @@ def process_file(pathname, options):
         if options.no_rename:
             fn = pathname
         else:
-            fn = "{}/{}{}".format(os.path.dirname(pathname), p.get_pathname(),
-                                  suffix)
+            fn = "{}{}".format(p.get_pathname(), suffix)
+            dirname = os.path.dirname(pathname)
+            if dirname != '':
+                fn = "{}/{}".format(dirname, fn)
             if fn != pathname and os.path.exists(fn) and not options.force:
                 print >> sys.stderr, "%s already exists." % fn
                 return

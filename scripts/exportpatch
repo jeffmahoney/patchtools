@@ -77,6 +77,9 @@ if __name__ == "__main__":
     parser.add_option("-n", "--numeric", action="store_true",
                       help="when used with -w, prepend order numbers to filenames.",
                       default=False)
+    parser.add_option("--num-width", type="int", action="store",
+                      help="when used with -n, set the width of the order numbers",
+                      default=4)
     parser.add_option("-N", "--first-number", action="store",
                       help="Start numbering the patches with number instead of 1",
                       default=1)
@@ -114,10 +117,18 @@ if __name__ == "__main__":
     if options.suffix:
         suffix = ".patch"
 
+    num_width = 4
+    if options.num_width:
+        _n = int(options.num_width)
+        if _n > 0 and _n < 5:
+            num_width = _n
+
     for commit in args:
         prefix = ""
+
         if options.numeric:
-                prefix = "%04d-" % n
+            prefix = "{0:0{1}}-".format(n, num_width)
+
         export_patch(commit, options, prefix, suffix)
         n += 1
 

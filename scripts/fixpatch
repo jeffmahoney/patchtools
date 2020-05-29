@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # vim: sw=4 ts=4 et si:
 """
 Take an existing patch and add the appropriate tags, drawing from known
@@ -27,7 +27,7 @@ def process_file(pathname, options):
             if options.suffix:
                 suffix = ".patch"
             fn = p.get_pathname()
-            print "{}{}".format(fn, suffix)
+            print("{}{}".format(fn, suffix))
             return
 
         if options.update_only:
@@ -38,8 +38,7 @@ def process_file(pathname, options):
             options.no_ack = True
             options.no_diffstat = True
             if options.reference:
-                print >>sys.stderr, \
-                      "References won't be updated in header-only mode."
+                print("References won't be updated in header-only mode.", file=sys.stderr)
                 options.reference = None
 
         if not options.no_diffstat:
@@ -54,7 +53,7 @@ def process_file(pathname, options):
             p.add_mainline(options.mainline)
 
         if options.dry_run:
-            print p.message.as_string(unixfrom=False)
+            print(p.message.as_string(unixfrom=False))
             return
 
         suffix=""
@@ -69,16 +68,16 @@ def process_file(pathname, options):
             if dirname != '':
                 fn = "{}/{}".format(dirname, fn)
             if fn != pathname and os.path.exists(fn) and not options.force:
-                print >> sys.stderr, "%s already exists." % fn
+                print("%s already exists." % fn, file=sys.stderr)
                 return
-        print fn
+        print(fn)
         f = open(fn, "w")
-        print >> f, p.message.as_string(unixfrom=False)
+        print(p.message.as_string(unixfrom=False), file=f)
         f.close()
         if fn != pathname:
             os.unlink(pathname)
-    except PatchException, e:
-        print >>sys.stderr, e
+    except PatchException as e:
+        print(e, file=sys.stderr)
 
 if __name__ == "__main__":
     parser = OptionParser(version='%prog ' + __revision__)

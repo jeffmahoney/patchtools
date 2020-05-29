@@ -8,8 +8,8 @@ from patchtools import config, PatchException
 import re
 import os
 import email.parser
-import urllib
-from urlparse import urlparse
+import urllib.request, urllib.parse, urllib.error
+from urllib.parse import urlparse
 import string
 
 _patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
@@ -40,7 +40,7 @@ class Patch:
         if repo in self.mainline_repo_list:
             self.in_mainline = True
         if self.debug:
-            print "DEBUG: repo_list:", self.repo_list
+            print("DEBUG: repo_list:", self.repo_list)
 
         if commit and (re.search("\^", commit) or re.search("HEAD", commit)):
             raise InvalidCommitIDException("Commit IDs must be hashes, not relative references. HEAD and ^ are not allowed.")
@@ -97,10 +97,10 @@ class Patch:
 
             refs += newrefs
             refs.sort()
-            self.message.replace_header('References', string.join(refs, ' '))
+            self.message.replace_header('References', ' '.join(refs))
         else:
             newrefs.sort()
-            self.message.add_header('References', string.join(newrefs, ' '))
+            self.message.add_header('References', ' '.join(newrefs))
 
     def add_signature(self, sob=False):
         for line in self.message.get_payload().splitlines():
@@ -129,7 +129,7 @@ class Patch:
         self.message.set_payload(text)
 
     def add_mainline(self, tag):
-        self.message.add_header('Patch-mainline', string.join(tag))
+        self.message.add_header('Patch-mainline', ' '.join(tag))
 
     def from_email(self, msg):
         p = email.parser.Parser()
@@ -210,15 +210,15 @@ class Patch:
 
     def parse_commitdiff_header(self):
         url = self.message['X-Git-Url']
-        url = urllib.unquote(url)
+        url = urllib.parse.unquote(url)
 
         uc = urlparse(url)
         if not uc.scheme:
             raise InvalidURLException("X-Git-Url provided but is not a URL (%s)" % url)
 
-        args = dict(map(lambda x : x.split('=', 1), uc.query.split(';')))
+        args = dict([x.split('=', 1) for x in uc.query.split(';')])
         if 'p' in args:
-            args['p'] = urllib.unquote(args['p'])
+            args['p'] = urllib.parse.unquote(args['p'])
 
         if uc.netloc == 'git.kernel.org':
             self.repo = None
@@ -331,10 +331,10 @@ class Patch:
                     start = n - 3 # count this line
                     if start < 0:
                         if debug:
-                            print "resetting start(1) (%d, %d)" % (start, n)
-                            print "----"
-                            print chunk
-                            print "----"
+                            print("resetting start(1) (%d, %d)" % (start, n))
+                            print("----")
+                            print(chunk)
+                            print("----")
                         start = 0
 
                 removed += 1
@@ -344,10 +344,10 @@ class Patch:
                     start = n - 3 # count this line
                     if start < 0:
                         if debug:
-                            print "resetting start(2) (%d, %d)" % (start, n)
-                            print "----"
-                            print chunk
-                            print "----"
+                            print("resetting start(2) (%d, %d)" % (start, n))
+                            print("----")
+                            print(chunk)
+                            print("----")
                         start = 0
 
                 added += 1
@@ -358,17 +358,17 @@ class Patch:
                     end = n # count this line
                     if end >= len(lines):
                         if debug:
-                            print "Truncating end"
-                            print "----"
-                            print chunk
-                            print "----"
+                            print("Truncating end")
+                            print("----")
+                            print(chunk)
+                            print("----")
                         end = len(lines) - 1
 
             if start >= 0 and end >= 0:
                 diff = end - start
                 text +=  "@@ -%d,%d +%d,%d @@\n" % \
                     (start + 1, diff - added, start + 1, diff - removed)
-                text += string.join(lines[start:end] , "\n")
+                text += "\n".join(lines[start:end])
                 text += '\n'
                 end = -1
                 start = -1
@@ -451,9 +451,9 @@ class Patch:
                 self.message.replace_header('Git-commit',
                                             '%s (partial)' % commit)
             if exclude:
-                filtered_header = string.join([''] + files, ' !')[1:]
+                filtered_header = ' !'.join([''] + files)[1:]
             else:
-                filtered_header = string.join(files, ' ')
+                filtered_header = ' '.join(files)
 
             if 'Patch-filtered' in self.message:
                 h = self.message['Patch-filtered']

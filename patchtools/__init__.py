@@ -3,7 +3,7 @@
 """patch class"""
 
 import os
-import config
+from . import config
 
 __version__ = '1.2'
 

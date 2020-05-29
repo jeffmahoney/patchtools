@@ -16,7 +16,8 @@ def key_version(tag):
         if m.group(5):
             return (major, minor, patch, False, m.group(5))
         else:
-            return (major, minor, patch, True, m.group(4))
+            mgroup4=m.group(4) if m.group(4) else ""
+            return (major, minor, patch, True, mgroup4)
 
     m = re.match("v(\d+)\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
     if m:
@@ -28,9 +29,9 @@ def key_version(tag):
         else:
             if m.group(4):
                     patch = int(m.group(4))
-            return (major, minor, patch, True, None)
+            return (major, minor, patch, True, "")
 
-    return None
+    return ""
 
 class LocalCommitException(PatchException):
     pass
@@ -40,7 +41,8 @@ class PatchOps:
     def get_tag(commit, repo):
         command = "(cd %s;git name-rev --refs=refs/tags/v* %s)" % (repo, commit)
 
-        cmd = Popen(command, shell=True, stdout=PIPE, stderr=open("/dev/null", "w"))
+        cmd = Popen(command, shell=True, text=True,
+                    stdout=PIPE, stderr=open("/dev/null", "w"))
         tag = cmd.communicate()[0]
 
         if tag == "":
@@ -56,8 +58,9 @@ class PatchOps:
 
     @staticmethod
     def get_next_tag(repo):
-        command = "(cd %s ; git tag -l)" % repo
-        cmd = Popen(command, shell=True, stdout=PIPE, stderr=open("/dev/null", "w"))
+        command = "(cd %s ; git tag -l 'v*')" % repo
+        cmd = Popen(command, shell=True, text=True,
+                    stdout=PIPE, stderr=open("/dev/null", "w"))
         tag = cmd.communicate()[0]
 
         if tag == "":
@@ -83,7 +86,8 @@ class PatchOps:
     @staticmethod
     def get_diffstat(message):
 
-        cmd = Popen("diffstat -p1", shell=True, stdin=PIPE, stdout=PIPE)
+        cmd = Popen("diffstat -p1", shell=True, text=True,
+                    stdin=PIPE, stdout=PIPE)
 
         out = cmd.communicate(message)[0]
 
@@ -92,8 +96,8 @@ class PatchOps:
     @staticmethod
     def get_git_repo_url(dir):
         command = "(cd %s; git remote show origin -n)" % dir
-        cmd = Popen(command, shell=True, stdout=PIPE,
-                    stderr=open("/dev/null", "w"))
+        cmd = Popen(command, shell=True, text=True,
+                    stdout=PIPE, stderr=open("/dev/null", "w"))
         for line in cmd.communicate()[0].split('\n'):
             m = re.search("URL:\s+(\S+)", line)
             if m:
@@ -103,7 +107,9 @@ class PatchOps:
 
     @staticmethod
     def confirm_commit(commit, repo):
-        cmd = Popen("cd %s ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)" % repo, shell=True, stdout=PIPE, stderr=open("/dev/null", "w"))
+        cmd = Popen("cd %s ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)" % repo,
+                    shell=True, text=True,
+                    stdout=PIPE, stderr=open("/dev/null", "w"))
         out = cmd.communicate()[0]
         if out == "":
             return True
@@ -117,9 +123,8 @@ class PatchOps:
     def get_commit(commit, repo, force=False):
         cmd = Popen("cd %s ; git diff-tree --no-renames --pretty=email -r -p --cc --stat %s" % \
                     (repo, commit),
-                    shell=True,
-                    stdout=PIPE,
-                    stderr=open("/dev/null", "w"))
+                    shell=True, text=True,
+                    stdout=PIPE, stderr=open("/dev/null", "w"))
         data = cmd.communicate()[0]
         if data == "":
             return None

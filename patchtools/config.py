@@ -6,7 +6,7 @@ Represent Git Repos
 import os
 import pwd
 import site
-import ConfigParser
+import configparser
 from subprocess import Popen, PIPE
 import re
 
@@ -14,8 +14,8 @@ MAINLINE_URLS = [ """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linu
 
 def get_git_repo_url(gitdir):
     command = "(cd %s; git remote show origin -n)" % gitdir
-    cmd = Popen(command, shell=True, stdout=PIPE,
-                stderr=open("/dev/null", "w"))
+    cmd = Popen(command, shell=True, text=True,
+                stdout=PIPE, stderr=open("/dev/null", "w"))
     for line in cmd.communicate()[0].split('\n'):
         m = re.search("URL:\s+(\S+)", line)
         if m:
@@ -25,8 +25,8 @@ def get_git_repo_url(gitdir):
 
 def get_git_config(gitdir, var):
     command = "(cd {}; git config {})".format(gitdir, var)
-    cmd = Popen(command, shell=True, stdout=PIPE,
-                stderr=open("/dev/null", "w"))
+    cmd = Popen(command, shell=True, text=True,
+                stdout=PIPE, stderr=open("/dev/null", "w"))
     return cmd.communicate()[0].strip()
 
 # We deliberately don't catch exceptions when the option is mandatory
@@ -44,7 +44,7 @@ class Config:
         self.merge_mainline_repos()
 
     def read_configs(self):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         files_read = config.read([ '/etc/patch.cfg',
                                    '%s/etc/patch.cfg' % site.USER_BASE,
                                    os.path.expanduser('~/.patch.cfg'),
@@ -53,18 +53,18 @@ class Config:
             self.repos = config.get('repositories', 'search').split()
             repos = config.get('repositories', 'mainline').split()
             self.mainline_repos += repos
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError) as e:
+        except (configparser.NoOptionError, configparser.NoSectionError) as e:
             pass
 
         try:
             self.name = config.get('contact', 'name')
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError) as e:
+        except (configparser.NoOptionError, configparser.NoSectionError) as e:
             pass
 
         try:
             self.emails = config.get('contact', 'email').split()
             self.email = self.emails[0]
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError) as e:
+        except (configparser.NoOptionError, configparser.NoSectionError) as e:
             pass
 
     def merge_mainline_repos(self):

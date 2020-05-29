@@ -12,3 +12,4 @@ it to fit your site.
 
 Tools written by Jeff Mahoney <jeffm@suse.com>
 Setuptools integration by Lee Duncan <lduncan@suse.com>
+Conversion to Python3 by Tony Jones <tonyj@suse.de>

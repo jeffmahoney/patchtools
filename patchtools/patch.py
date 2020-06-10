@@ -3,7 +3,7 @@
 Support package for doing SUSE Patch operations
 """
 
-from patchtools.patchops import PatchOps
+import patchtools.patchops as patchops
 from patchtools import config, PatchException
 import re
 import os
@@ -50,7 +50,7 @@ class Patch:
             if re.search("[0-9]+ files? changed, [0-9]+ insertion", line):
                 return
 
-        diffstat = PatchOps.get_diffstat(self.body())
+        diffstat = patchops.get_diffstat(self.body())
         text = ""
         switched = False
         need_sep = True
@@ -156,7 +156,7 @@ class Patch:
         elif self.repo and not self.message['Git-repo']:
             r = self.repourl
             if not r:
-                    r = PatchOps.get_git_repo_url(self.repo)
+                    r = patchops.get_git_repo_url(self.repo)
             if r and r not in self.mainline_repo_list:
                 self.message.add_header('Git-repo', r)
                 self.repourl = r
@@ -165,9 +165,9 @@ class Patch:
             self.message.add_header('Git-commit', self.commit)
 
         if self.in_mainline:
-            tag = PatchOps.get_tag(self.commit, self.repo)
+            tag = patchops.get_tag(self.commit, self.repo)
             if tag and tag == "undefined":
-                    tag = PatchOps.get_next_tag(self.repo)
+                    tag = patchops.get_next_tag(self.repo)
             if tag:
                 if 'Patch-mainline' in self.message:
                     self.message.replace_header('Patch-mainline', tag)
@@ -189,7 +189,7 @@ class Patch:
         f.close()
 
     def files(self):
-        diffstat = PatchOps.get_diffstat(self.body())
+        diffstat = patchops.get_diffstat(self.body())
         f = []
         for line in diffstat.splitlines():
             m = re.search("#? (\S+) \| ", line)
@@ -201,7 +201,7 @@ class Patch:
 
     def find_commit(self):
         for repo in self.repo_list:
-            commit = PatchOps.get_commit(self.commit, repo, self.force)
+            commit = patchops.get_commit(self.commit, repo, self.force)
             if commit is not None:
                 self.repo = repo
                 self.from_email(commit)
@@ -234,7 +234,7 @@ class Patch:
 
     def get_pathname(self, dir=None, prefix="", suffix=""):
         if self.message and self.message['Subject']:
-            fn = PatchOps.safe_filename(self.message['Subject'])
+            fn = patchops.safe_filename(self.message['Subject'])
             fn = "%s%s%s" % (prefix, fn, suffix)
             if dir:
                 fn = dir + os.sep + fn
@@ -253,11 +253,11 @@ class Patch:
         if self.commit:
             commit = None
             for repo in self.repo_list:
-                commit = PatchOps.get_commit(self.commit, repo, self.force)
+                commit = patchops.get_commit(self.commit, repo, self.force)
                 if commit:
                     r = self.repourl
                     if not r:
-                            r = PatchOps.get_git_repo_url(self.repo)
+                            r = patchops.get_git_repo_url(self.repo)
                     if r and r in self.mainline_repo_list:
                         self.in_mainline = True
                     else:

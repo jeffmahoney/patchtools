@@ -36,100 +36,92 @@ def key_version(tag):
 class LocalCommitException(PatchException):
     pass
 
-class PatchOps:
-    @staticmethod
-    def get_tag(commit, repo):
-        command = f"(cd {repo};git name-rev --refs=refs/tags/v* {commit})"
-        tag = run_command(command)
-        if tag == "":
-            return None
+def get_tag(commit, repo):
+    command = f"(cd {repo};git name-rev --refs=refs/tags/v* {commit})"
+    tag = run_command(command)
+    if tag == "":
+        return None
 
-        m = re.search("tags/([a-zA-Z0-9\.-]+)\~?\S*$", tag)
+    m = re.search("tags/([a-zA-Z0-9\.-]+)\~?\S*$", tag)
+    if m:
+        return m.group(1)
+    m = re.search("(undefined)", tag)
+    if m:
+        return m.group(1)
+    return None
+
+def get_next_tag(repo):
+    command = f"(cd {repo} ; git tag -l 'v*')"
+    tag = run_command(command)
+    if tag == "":
+        return None
+
+    lines = tag.split()
+    lines.sort(key=key_version)
+    lasttag = lines[len(lines) - 1]
+
+    m = re.search("v([0-9]+)\.([0-9]+)(|-rc([0-9]+))$", lasttag)
+    if m:
+        # Post-release commit with no rc, it'll be rc1
+        if m.group(3) == "":
+            nexttag = "v%s.%d-rc1" % (m.group(1), int(m.group(2)) + 1)
+        else:
+            nexttag = "v%s.%d or v%s.%s-rc%d (next release)" % \
+                      (m.group(1), int(m.group(2)), m.group(1),
+                       m.group(2), int(m.group(4)) + 1)
+        return nexttag
+
+    return None
+
+def get_diffstat(message):
+    return run_command("diffstat -p1", input=message)
+
+def get_git_repo_url(dir):
+    command = f"(cd {dir}; git remote show origin -n)"
+    output = run_command(command)
+    for line in output:
+        m = re.search("URL:\s+(\S+)", line)
         if m:
             return m.group(1)
-        m = re.search("(undefined)", tag)
-        if m:
-            return m.group(1)
-        return None
 
-    @staticmethod
-    def get_next_tag(repo):
-        command = f"(cd {repo} ; git tag -l 'v*')"
-        tag = run_command(command)
-        if tag == "":
-            return None
+    return None
 
-        lines = tag.split()
-        lines.sort(key=key_version)
-        lasttag = lines[len(lines) - 1]
-
-        m = re.search("v([0-9]+)\.([0-9]+)(|-rc([0-9]+))$", lasttag)
-        if m:
-            # Post-release commit with no rc, it'll be rc1
-            if m.group(3) == "":
-                nexttag = "v%s.%d-rc1" % (m.group(1), int(m.group(2)) + 1)
-            else:
-                nexttag = "v%s.%d or v%s.%s-rc%d (next release)" % \
-                          (m.group(1), int(m.group(2)), m.group(1),
-                           m.group(2), int(m.group(4)) + 1)
-            return nexttag
-
-        return None
-
-    @staticmethod
-    def get_diffstat(message):
-        return run_command("diffstat -p1", input=message)
-
-    @staticmethod
-    def get_git_repo_url(dir):
-        command = f"(cd {dir}; git remote show origin -n)"
-        output = run_command(command)
-        for line in output:
-            m = re.search("URL:\s+(\S+)", line)
-            if m:
-                return m.group(1)
-
-        return None
-
-    @staticmethod
-    def confirm_commit(commit, repo):
-        command = f"cd {repo} ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)"
-        out = run_command(command)
-        if out == "":
-            return True
-
-        commits = out.split()
-        if commit in commits:
-            return False
+def confirm_commit(commit, repo):
+    command = f"cd {repo} ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)"
+    out = run_command(command)
+    if out == "":
         return True
 
-    @staticmethod
-    def get_commit(commit, repo, force=False):
-        command = f"cd {repo}; git diff-tree --no-renames --pretty=email -r -p --cc --stat {commit}"
-        data = run_command(command)
-        if data == "":
-            return None
+    commits = out.split()
+    if commit in commits:
+        return False
+    return True
 
-        if not force and not PatchOps.confirm_commit(commit, repo):
-            raise LocalCommitException("Commit is not in the remote repository. Use -f to override.")
+def get_commit(commit, repo, force=False):
+    command = f"cd {repo}; git diff-tree --no-renames --pretty=email -r -p --cc --stat {commit}"
+    data = run_command(command)
+    if data == "":
+        return None
 
-        return data
+    if not force and not confirm_commit(commit, repo):
+        raise LocalCommitException("Commit is not in the remote repository. Use -f to override.")
 
-    @staticmethod
-    def safe_filename(name):
-        if name is None:
-            return name
-        name = re.sub('\[PATCH[^]]*\]', '', name)
-        name = re.sub('\[.*[^]]*\]', '', name)
-        name = re.sub('^ *', '', name)
-        name = re.sub('[\[\]\(\)]', '', name)
-        name = re.sub('\|', '_', name)
-        name = re.sub('[^_A-Z0-9a-z/ ]', '-', name)
-        name = re.sub('[ /]', '-', name)
-        name = re.sub('--*', '-', name)
-        name = re.sub('-_', '-', name)
-        name = re.sub('-$', '', name)
-        name = re.sub('^-*', '', name)
-        name = re.sub('^staging-', '', name)
+    return data
 
-        return name.lower()
+def safe_filename(name):
+    if name is None:
+        return name
+    name = re.sub('\[PATCH[^]]*\]', '', name)
+    name = re.sub('\[.*[^]]*\]', '', name)
+    name = re.sub('^ *', '', name)
+    name = re.sub('[\[\]\(\)]', '', name)
+    name = re.sub('\|', '_', name)
+    name = re.sub('[^_A-Z0-9a-z/ ]', '-', name)
+    name = re.sub('[ /]', '-', name)
+    name = re.sub('--*', '-', name)
+    name = re.sub('-_', '-', name)
+    name = re.sub('-$', '', name)
+    name = re.sub('^-*', '', name)
+    name = re.sub('^staging-', '', name)
+
+    return name.lower()

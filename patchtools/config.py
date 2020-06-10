@@ -7,16 +7,16 @@ import os
 import pwd
 import site
 import configparser
-from subprocess import Popen, PIPE
 import re
+
+from patchtools.command import run_command
 
 MAINLINE_URLS = [ """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git""", """git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git""" ]
 
 def get_git_repo_url(gitdir):
-    command = "(cd %s; git remote show origin -n)" % gitdir
-    cmd = Popen(command, shell=True, text=True,
-                stdout=PIPE, stderr=open("/dev/null", "w"))
-    for line in cmd.communicate()[0].split('\n'):
+    command = f"(cd {gitdir}; git remote show origin -n)"
+    output = run_command(command)
+    for line in output.split('\n'):
         m = re.search("URL:\s+(\S+)", line)
         if m:
             return m.group(1)
@@ -24,10 +24,8 @@ def get_git_repo_url(gitdir):
     return None
 
 def get_git_config(gitdir, var):
-    command = "(cd {}; git config {})".format(gitdir, var)
-    cmd = Popen(command, shell=True, text=True,
-                stdout=PIPE, stderr=open("/dev/null", "w"))
-    return cmd.communicate()[0].strip()
+    command = f"(cd {gitdir}; git config {var})"
+    return run_command(command).strip()
 
 # We deliberately don't catch exceptions when the option is mandatory
 class Config:

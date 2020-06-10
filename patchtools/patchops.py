@@ -4,7 +4,7 @@ Support package for doing SUSE Patch operations
 """
 
 from patchtools import PatchException
-from subprocess import Popen, PIPE
+from patchtools.command import run_command
 import re
 
 def key_version(tag):
@@ -39,12 +39,8 @@ class LocalCommitException(PatchException):
 class PatchOps:
     @staticmethod
     def get_tag(commit, repo):
-        command = "(cd %s;git name-rev --refs=refs/tags/v* %s)" % (repo, commit)
-
-        cmd = Popen(command, shell=True, text=True,
-                    stdout=PIPE, stderr=open("/dev/null", "w"))
-        tag = cmd.communicate()[0]
-
+        command = f"(cd {repo};git name-rev --refs=refs/tags/v* {commit})"
+        tag = run_command(command)
         if tag == "":
             return None
 
@@ -58,11 +54,8 @@ class PatchOps:
 
     @staticmethod
     def get_next_tag(repo):
-        command = "(cd %s ; git tag -l 'v*')" % repo
-        cmd = Popen(command, shell=True, text=True,
-                    stdout=PIPE, stderr=open("/dev/null", "w"))
-        tag = cmd.communicate()[0]
-
+        command = f"(cd {repo} ; git tag -l 'v*')"
+        tag = run_command(command)
         if tag == "":
             return None
 
@@ -85,20 +78,13 @@ class PatchOps:
 
     @staticmethod
     def get_diffstat(message):
-
-        cmd = Popen("diffstat -p1", shell=True, text=True,
-                    stdin=PIPE, stdout=PIPE)
-
-        out = cmd.communicate(message)[0]
-
-        return out
+        return run_command("diffstat -p1", input=message)
 
     @staticmethod
     def get_git_repo_url(dir):
-        command = "(cd %s; git remote show origin -n)" % dir
-        cmd = Popen(command, shell=True, text=True,
-                    stdout=PIPE, stderr=open("/dev/null", "w"))
-        for line in cmd.communicate()[0].split('\n'):
+        command = f"(cd {dir}; git remote show origin -n)"
+        output = run_command(command)
+        for line in output:
             m = re.search("URL:\s+(\S+)", line)
             if m:
                 return m.group(1)
@@ -107,10 +93,8 @@ class PatchOps:
 
     @staticmethod
     def confirm_commit(commit, repo):
-        cmd = Popen("cd %s ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)" % repo,
-                    shell=True, text=True,
-                    stdout=PIPE, stderr=open("/dev/null", "w"))
-        out = cmd.communicate()[0]
+        command = f"cd {repo} ; git rev-list HEAD --not --remotes $(git config --get branch.$(git symbolic-ref --short HEAD).remote)"
+        out = run_command(command)
         if out == "":
             return True
 
@@ -121,11 +105,8 @@ class PatchOps:
 
     @staticmethod
     def get_commit(commit, repo, force=False):
-        cmd = Popen("cd %s ; git diff-tree --no-renames --pretty=email -r -p --cc --stat %s" % \
-                    (repo, commit),
-                    shell=True, text=True,
-                    stdout=PIPE, stderr=open("/dev/null", "w"))
-        data = cmd.communicate()[0]
+        command = f"cd {repo}; git diff-tree --no-renames --pretty=email -r -p --cc --stat {commit}"
+        data = run_command(command)
         if data == "":
             return None
 

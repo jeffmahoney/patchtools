@@ -31,7 +31,7 @@ def key_version(tag):
                     patch = int(m.group(4))
             return (major, minor, patch, True, "")
 
-    return ""
+    return ()
 
 class LocalCommitException(PatchException):
     pass

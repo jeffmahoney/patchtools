@@ -96,6 +96,9 @@ def confirm_commit(commit, repo):
         return False
     return True
 
+def canonicalize_commit(commit, repo):
+    return run_command(f"cd {repo} ; git show -s {commit}^{{}} --pretty=%H")
+
 def get_commit(commit, repo, force=False):
     command = f"cd {repo}; git diff-tree --no-renames --pretty=email -r -p --cc --stat {commit}"
     data = run_command(command)

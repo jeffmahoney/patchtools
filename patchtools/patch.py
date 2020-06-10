@@ -203,6 +203,7 @@ class Patch:
         for repo in self.repo_list:
             commit = patchops.get_commit(self.commit, repo, self.force)
             if commit is not None:
+                self.commit = patchops.canonicalize_commit(self.commit, repo)
                 self.repo = repo
                 self.from_email(commit)
                 return True

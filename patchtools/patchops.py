@@ -19,17 +19,16 @@ def key_version(tag):
             mgroup4=m.group(4) if m.group(4) else ""
             return (major, minor, patch, True, mgroup4)
 
-    m = re.match("v(\d+)\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
+    # We purposely ignore x.y.z tags since those are from -stable and
+    # will never be used in a mainline tag.
+    m = re.match("v(\d+)\.(\d+)(-rc(\d+)|)", tag)
     if m:
         major = int(m.group(1))
         minor = int(m.group(2))
         patch = 0
-        if m.group(5):
-            return (major, minor, patch, False, m.group(5))
-        else:
-            if m.group(4):
-                    patch = int(m.group(4))
-            return (major, minor, patch, True, "")
+        if m.group(4):
+                patch = int(m.group(4))
+        return (major, minor, patch, True, "")
 
     return ()
 
@@ -51,7 +50,7 @@ def get_tag(commit, repo):
     return None
 
 def get_next_tag(repo):
-    command = f"(cd {repo} ; git tag -l 'v*')"
+    command = f"(cd {repo} ; git tag -l 'v[0-9]*')"
     tag = run_command(command)
     if tag == "":
         return None

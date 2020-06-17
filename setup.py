@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # vim: sw=4 ts=4 et si:
 """
 Setup file for installation
@@ -16,4 +16,4 @@ setup(
     name="patchtools",
     packages=["patchtools"],
     scripts=["scripts/exportpatch", "scripts/fixpatch"],
-    version="2.2")
+    version="2.3")

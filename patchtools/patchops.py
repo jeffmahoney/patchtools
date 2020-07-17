@@ -78,7 +78,7 @@ def get_diffstat(message):
 def get_git_repo_url(dir):
     command = f"(cd {dir}; git remote show origin -n)"
     output = run_command(command)
-    for line in output:
+    for line in output.split('\n'):
         m = re.search("URL:\s+(\S+)", line)
         if m:
             return m.group(1)

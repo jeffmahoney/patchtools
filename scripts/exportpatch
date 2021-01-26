@@ -64,6 +64,7 @@ def export_patch(commit, options, prefix, suffix):
             print(p.message.as_string(False))
     else:
         print("Couldn't locate commit \"%s\"; Skipping." % commit, file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     parser = OptionParser(version='%prog ' + __revision__,

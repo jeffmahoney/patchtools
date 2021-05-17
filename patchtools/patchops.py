@@ -110,20 +110,21 @@ def get_commit(commit, repo, force=False):
 
     return data
 
-def safe_filename(name):
+def safe_filename(name, keep_non_patch_brackets = True):
     if name is None:
         return name
-    name = re.sub('\[PATCH[^]]*\]', '', name)
-    name = re.sub('\[.*[^]]*\]', '', name)
-    name = re.sub('^ *', '', name)
-    name = re.sub('[\[\]\(\)]', '', name)
-    name = re.sub('\|', '_', name)
-    name = re.sub('[^_A-Z0-9a-z/ ]', '-', name)
-    name = re.sub('[ /]', '-', name)
-    name = re.sub('--*', '-', name)
-    name = re.sub('-_', '-', name)
-    name = re.sub('-$', '', name)
-    name = re.sub('^-*', '', name)
-    name = re.sub('^staging-', '', name)
 
-    return name.lower()
+    # These mimic the filters that git-am applies when it parses the email
+    # to remove noise from the subject line.
+    # keep_non_patch_brackets=True is the equivalent of git am -b
+    if keep_non_patch_brackets:
+        name = re.sub('(([Rr][Ee]:|\[PATCH[^]]*\])[ \t]*)*', '', name, 1)
+    else:
+        name = re.sub('(([Rr][Ee]:|\[[^]]*\])[ \t]*)*', '', name, 1)
+
+    # This mimics the filters that git-format-patch applies prior to adding
+    # prefixes or suffixes.
+    name = re.sub('[^_A-Z0-9a-z\.]', '-', name)
+    name = re.sub('-+', '-', name)
+    name = re.sub('\.+', '.', name)
+    return name.strip('-. ')

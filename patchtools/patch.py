@@ -7,6 +7,7 @@ import patchtools.patchops as patchops
 from patchtools import config, PatchException
 import re
 import os
+import os.path
 import email.parser
 import urllib.request, urllib.parse, urllib.error
 from urllib.parse import urlparse
@@ -233,13 +234,16 @@ class Patch:
             self.commit = args['h']
         del self.message['X-Git-Url']
 
-    def get_pathname(self, dir=None, prefix="", suffix=""):
+    def get_pathname(self, dirname=None, prefix="", suffix="", truncate=64):
         if self.message and self.message['Subject']:
-            fn = patchops.safe_filename(self.message['Subject'])
-            fn = "%s%s%s" % (prefix, fn, suffix)
-            if dir:
-                fn = dir + os.sep + fn
-            return fn
+            filename = patchops.safe_filename(self.message['Subject'])
+            truncate_chars = truncate - len(filename) - len(prefix + suffix)
+            if truncate_chars < 0:
+                filename = filename[0:truncate_chars]
+            filename = prefix + filename + suffix
+            if dirname:
+                filename = os.path.join(dirname, filename)
+            return filename
         else:
             raise InvalidPatchException("Patch contains no Subject line")
 

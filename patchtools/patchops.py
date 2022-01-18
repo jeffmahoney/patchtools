@@ -14,9 +14,9 @@ def key_version(tag):
         minor = int(m.group(1))
         patch = int(m.group(2))
         if m.group(5):
-            return (major, minor, patch, False, m.group(5))
+            return (major, minor, patch, False, int(m.group(5)))
         else:
-            mgroup4=m.group(4) if m.group(4) else ""
+            mgroup4=int(m.group(4)) if m.group(4) else 0
             return (major, minor, patch, True, mgroup4)
 
     # We purposely ignore x.y.z tags since those are from -stable and
@@ -25,10 +25,9 @@ def key_version(tag):
     if m:
         major = int(m.group(1))
         minor = int(m.group(2))
-        patch = 0
         if m.group(4):
-                patch = int(m.group(4))
-        return (major, minor, patch, True, "")
+                return (major, minor, 0, False, int(m.group(4)))
+        return (major, minor, 0, True, "")
 
     return ()
 

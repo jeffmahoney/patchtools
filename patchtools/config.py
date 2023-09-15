@@ -50,7 +50,7 @@ class Config:
         try:
             self.repos = config.get('repositories', 'search').split()
             repos = config.get('repositories', 'mainline').split()
-            self.mainline_repos += repos
+            self.mainline_repos.append(repos)
         except (configparser.NoOptionError, configparser.NoSectionError) as e:
             pass
 
@@ -69,7 +69,7 @@ class Config:
         for repo in self.repos:
             url = get_git_repo_url(repo)
             if url in self.mainline_repos:
-                self.mainline_repos += repo
+                self.mainline_repos.append(repo)
 
     def _canonicalize(self, path):
         if path[0] == '/':

@@ -5,6 +5,7 @@ Support package for doing SUSE Patch operations
 
 import patchtools.patchops as patchops
 from patchtools import config, PatchException
+from patchtools.command import run_command
 import re
 import os
 import os.path
@@ -132,6 +133,18 @@ class Patch:
     def add_mainline(self, tag):
         self.message.add_header('Patch-mainline', ' '.join(tag))
 
+    def _get_commit_remote_name(self):
+        output = run_command(f"cd {self.repo}; git name-rev --refs \"remotes/*\" {self.commit}")
+        return output.split(" ")[1].split("/")[0].strip()
+
+    def _get_commit_remote_url(self, remote_name):
+        return run_command(f"cd {self.repo}; git remote get-url {remote_name}").strip()
+
+    def is_mainline_commit(self):
+        remote_name = self._get_commit_remote_name()
+        remote_url = self._get_commit_remote_url(remote_name)
+        return remote_url in self.mainline_repo_list
+
     def from_email(self, msg):
         p = email.parser.Parser()
         self.message = p.parsestr(msg)
@@ -152,15 +165,21 @@ class Patch:
         if not self.repo:
             f = self.find_repo()
 
-        if self.repo in self.mainline_repo_list:
+        is_mainline_commit = self.is_mainline_commit()
+
+        if self.repo in self.mainline_repo_list and is_mainline_commit:
             self.in_mainline = True
         elif self.repo and not self.message['Git-repo']:
             r = self.repourl
             if not r:
                     r = patchops.get_git_repo_url(self.repo)
-            if r and r not in self.mainline_repo_list:
-                self.message.add_header('Git-repo', r)
+            if r and (r not in self.mainline_repo_list or not is_mainline_commit):
+                if not is_mainline_commit:
+                    remote = self._get_commit_remote_name()
+                    r = self._get_commit_remote_url(remote)
+                    self.in_mainline = False
                 self.repourl = r
+                self.message.add_header('Git-repo', r)
 
         if self.commit and not self.message['Git-commit']:
             self.message.add_header('Git-commit', self.commit)

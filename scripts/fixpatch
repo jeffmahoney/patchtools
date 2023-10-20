@@ -11,7 +11,7 @@ __author__ = 'Jeff Mahoney'
 
 
 from patchtools import PatchException
-from patchtools.patch import PatchOps, Patch
+from patchtools.patch import Patch
 from optparse import OptionParser
 import sys
 import os

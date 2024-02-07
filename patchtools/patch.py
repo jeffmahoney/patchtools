@@ -143,7 +143,9 @@ class Patch:
     def is_mainline_commit(self):
         remote_name = self._get_commit_remote_name()
         remote_url = self._get_commit_remote_url(remote_name)
-        return remote_url in self.mainline_repo_list
+        if remote_url not in self.mainline_repo_list:
+            return run_command(f"cd {self.repo}; git branch -r --contains {self.commit}").find("origin/master") != -1
+        return True
 
     def from_email(self, msg):
         p = email.parser.Parser()
@@ -405,7 +407,7 @@ class Patch:
         body = ""
         chunk = ""
         text = ""
-        
+
         in_chunk = False
         in_patch = False
         lines = self.body().splitlines()

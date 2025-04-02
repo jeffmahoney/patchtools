@@ -8,7 +8,7 @@ import os
 import sys
 import shutil
 import site
-from distutils.core import setup, Command
+from setuptools import setup, Command
 
 setup(
     author="Jeff Mahoney",

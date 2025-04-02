@@ -14,7 +14,7 @@ import urllib.request, urllib.parse, urllib.error
 from urllib.parse import urlparse
 import string
 
-_patch_start_re = re.compile("^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
+_patch_start_re = re.compile(r"^(---|\*\*\*|Index:)[ \t][^ \t]|^diff -|^index [0-9a-f]{7}")
 
 class InvalidCommitIDException(PatchException):
     pass
@@ -44,12 +44,12 @@ class Patch:
         if self.debug:
             print("DEBUG: repo_list:", self.repo_list)
 
-        if commit and (re.search("\^", commit) or re.search("HEAD", commit)):
+        if commit and (re.search(r"\^", commit) or re.search(r"HEAD", commit)):
             raise InvalidCommitIDException("Commit IDs must be hashes, not relative references. HEAD and ^ are not allowed.")
 
     def add_diffstat(self):
         for line in self.message.get_payload().splitlines():
-            if re.search("[0-9]+ files? changed, [0-9]+ insertion", line):
+            if re.search(r"[0-9]+ files? changed, [0-9]+ insertion", line):
                 return
 
         diffstat = patchops.get_diffstat(self.body())
@@ -59,7 +59,7 @@ class Patch:
         body = ""
 
         for line in self.header().splitlines():
-            if re.match("^---$", line) and not switched:
+            if re.match(r"^---$", line) and not switched:
                 need_sep = False
 
         if need_sep:
@@ -75,10 +75,10 @@ class Patch:
         text = ""
         eat = ""
         for line in self.header().splitlines():
-            if re.search("#? .* \| ", line):
+            if re.search(r"#? .* \| ", line):
                 eat = eat + line + "\n"
                 continue
-            if re.match("#? .* files? changed(, .* insertions?\(\+\))?(, .* deletions?\(-\))?", line):
+            if re.match(r"#? .* files? changed(, .* insertions?\(\+\))?(, .* deletions?\(-\))?", line):
                 eat = ""
                 continue
             text += eat + line + "\n"
@@ -107,18 +107,18 @@ class Patch:
     def add_signature(self, sob=False):
         for line in self.message.get_payload().splitlines():
             for email in config.emails:
-                if re.search("Acked-by.*%s" % email, line) or \
-                   re.search("Signed-off-by.*%s" % email, line):
+                if re.search(r"Acked-by.*%s" % email, line) or \
+                   re.search(r"Signed-off-by.*%s" % email, line):
                     return
 
         text = ""
         last = ""
         for line in self.message.get_payload().splitlines():
-            if re.match("^---$", line):
+            if re.match(r"^---$", line):
                 text = text.rstrip() + "\n"
 
                 # If this is the first *-by tag, separate it
-                if not re.search("-by: ", last):
+                if not re.search(r"-by: ", last):
                     text += "\n"
                 if sob:
                     tag = "Signed-off-by"
@@ -156,11 +156,11 @@ class Patch:
 
         msg_from = self.message.get_unixfrom()
         if msg_from is not None:
-            m = re.match("From (\S{40})", msg_from)
+            m = re.match(r"From (\S{40})", msg_from)
             if m:
                 msg_commit = m.group(1)
                 if not self.commit or \
-                   re.match("^%s.*" % self.commit, msg_commit) is not None:
+                   re.match(r"^%s.*" % self.commit, msg_commit) is not None:
                     self.commit = msg_commit
                 self.find_repo()
 
@@ -196,7 +196,7 @@ class Patch:
                 else:
                     self.message.add_header('Patch-mainline', tag)
         elif self.message['Git-commit'] and self.repourl and \
-              re.search("git.kernel.org", self.repourl):
+              re.search(r"git.kernel.org", self.repourl):
             if 'Patch-mainline' in self.message:
                 self.message.replace_header('Patch-mainline',
                                         "Queued in subsystem maintainer repo")
@@ -214,7 +214,7 @@ class Patch:
         diffstat = patchops.get_diffstat(self.body())
         f = []
         for line in diffstat.splitlines():
-            m = re.search("#? (\S+) \| ", line)
+            m = re.search(r"#? (\S+) \| ", line)
             if m:
                 f.append(m.group(1))
             if not f:
@@ -352,7 +352,7 @@ class Patch:
         debug = False
         for line in lines:
             n += 1
-            if re.match("^-", line):
+            if re.match(r"^-", line):
                 if start < 0:
                     start = n - 3 # count this line
                     if start < 0:
@@ -365,7 +365,7 @@ class Patch:
 
                 removed += 1
                 count = 0
-            elif re.match("^\+", line):
+            elif re.match(r"^\+", line):
                 if start < 0:
                     start = n - 3 # count this line
                     if start < 0:
@@ -420,7 +420,7 @@ class Patch:
                     chunk += line + "\n"
                 in_patch = True
                 in_chunk = False
-            elif re.match("^@@@", line):
+            elif re.match(r"^@@@", line):
                 if in_chunk:
                     text += Patch.shrink_chunk(chunk)
                 else:
@@ -459,7 +459,7 @@ class Patch:
                 chunk = ""
             chunk += line + "\n"
 
-            m = re.match("^\+\+\+ [^/]+/(\S+)", line)
+            m = re.match(r"^\+\+\+ [^/]+/(\S+)", line)
             if m:
                 filename = m.group(1)
 

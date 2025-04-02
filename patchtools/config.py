@@ -17,7 +17,7 @@ def get_git_repo_url(gitdir):
     command = f"(cd {gitdir}; git remote show origin -n)"
     output = run_command(command)
     for line in output.split('\n'):
-        m = re.search("URL:\s+(\S+)", line)
+        m = re.search(r"URL:\s+(\S+)", line)
         if m:
             return m.group(1)
 

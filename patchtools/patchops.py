@@ -8,7 +8,7 @@ from patchtools.command import run_command
 import re
 
 def key_version(tag):
-    m = re.match("v2\.(\d+)\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
+    m = re.match(r"v2\.(\d+)\.(\d+)(\.(\d+)|-rc(\d+)|)", tag)
     if m:
         major = 2
         minor = int(m.group(1))
@@ -21,7 +21,7 @@ def key_version(tag):
 
     # We purposely ignore x.y.z tags since those are from -stable and
     # will never be used in a mainline tag.
-    m = re.match("v(\d+)\.(\d+)(-rc(\d+)|)", tag)
+    m = re.match(r"v(\d+)\.(\d+)(-rc(\d+)|)", tag)
     if m:
         major = int(m.group(1))
         minor = int(m.group(2))
@@ -40,10 +40,10 @@ def get_tag(commit, repo):
     if tag == "":
         return None
 
-    m = re.search("tags/([a-zA-Z0-9\.-]+)\~?\S*$", tag)
+    m = re.search(r"tags/([a-zA-Z0-9\.-]+)\~?\S*$", tag)
     if m:
         return m.group(1)
-    m = re.search("(undefined)", tag)
+    m = re.search(r"(undefined)", tag)
     if m:
         return m.group(1)
     return None
@@ -58,7 +58,7 @@ def get_next_tag(repo):
     lines.sort(key=key_version)
     lasttag = lines[len(lines) - 1]
 
-    m = re.search("v([0-9]+)\.([0-9]+)(|-rc([0-9]+))$", lasttag)
+    m = re.search(r"v([0-9]+)\.([0-9]+)(|-rc([0-9]+))$", lasttag)
     if m:
         # Post-release commit with no rc, it'll be rc1
         if m.group(3) == "":
@@ -78,7 +78,7 @@ def get_git_repo_url(dir):
     command = f"(cd {dir}; git remote show origin -n)"
     output = run_command(command)
     for line in output.split('\n'):
-        m = re.search("URL:\s+(\S+)", line)
+        m = re.search(r"URL:\s+(\S+)", line)
         if m:
             return m.group(1)
 
@@ -117,13 +117,13 @@ def safe_filename(name, keep_non_patch_brackets = True):
     # to remove noise from the subject line.
     # keep_non_patch_brackets=True is the equivalent of git am -b
     if keep_non_patch_brackets:
-        name = re.sub('(([Rr][Ee]:|\[PATCH[^]]*\])[ \t]*)*', '', name, 1)
+        name = re.sub(r'(([Rr][Ee]:|\[PATCH[^]]*\])[ \t]*)*', '', name, 1)
     else:
-        name = re.sub('(([Rr][Ee]:|\[[^]]*\])[ \t]*)*', '', name, 1)
+        name = re.sub(r'(([Rr][Ee]:|\[[^]]*\])[ \t]*)*', '', name, 1)
 
     # This mimics the filters that git-format-patch applies prior to adding
     # prefixes or suffixes.
-    name = re.sub('[^_A-Z0-9a-z\.]', '-', name)
-    name = re.sub('-+', '-', name)
-    name = re.sub('\.+', '.', name)
+    name = re.sub(r'[^_A-Z0-9a-z\.]', '-', name)
+    name = re.sub(r'-+', '-', name)
+    name = re.sub(r'\.+', '.', name)
     return name.strip('-. ')

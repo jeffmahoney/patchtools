@@ -16,4 +16,4 @@ setup(
     name="patchtools",
     packages=["patchtools"],
     scripts=["scripts/exportpatch", "scripts/fixpatch"],
-    version="2.4")
+    version="2.5")
